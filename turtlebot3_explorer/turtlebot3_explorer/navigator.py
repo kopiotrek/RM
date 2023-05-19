@@ -73,6 +73,14 @@ class BasicNavigator(Node):
             rclpy.spin_until_future_complete(self, future)
         return
 
+        # 'STATUS_UNKNOWN': 0,
+        # 'STATUS_ACCEPTED': 1,
+        # 'STATUS_EXECUTING': 2,
+        # 'STATUS_CANCELING': 3,
+        # 'STATUS_SUCCEEDED': 4,
+        # 'STATUS_CANCELED': 5,
+        # 'STATUS_ABORTED': 6,
+
     def isNavComplete(self):
         if not self.result_future:
             # task was cancelled or completed
@@ -80,12 +88,15 @@ class BasicNavigator(Node):
         rclpy.spin_until_future_complete(self, self.result_future, timeout_sec=0.10)
         if self.result_future.result():
             self.status = self.result_future.result().status
-            if self.status != GoalStatus.STATUS_SUCCEEDED:
+            if self.status == GoalStatus.STATUS_CANCELED or self.status == GoalStatus.STATUS_ABORTED:
                 self.info('Goal has failed with status code: {0}'.format(self.status))
-                return False
-            else:
+                return True
+            elif self.status == GoalStatus.STATUS_SUCCEEDED:
                 self.info('Goal succeeded!')
                 return True
+            else:
+                self.info('Goal in progress - please wait')
+                return False
             
     def getFeedback(self):
         return self.feedback
