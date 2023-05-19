@@ -84,11 +84,9 @@ class BasicNavigator(Node):
                 self.info('Goal has failed with status code: {0}'.format(self.status))
                 return False
             else:
+                self.info('Goal succeeded!')
                 return True
-
-        self.info('Goal succeeded!')
-        return True
-
+            
     def getFeedback(self):
         return self.feedback
 

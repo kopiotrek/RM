@@ -20,10 +20,11 @@ class GoalPositionPlanner(Node):
         self._init_nav2()
         self.goal_pub = self.create_publisher(
             PoseStamped, 'goal_pose', 10)  # 10 is queue_size
-        self.unknown_threshold = 50  # Customize the threshold to determine unknown areas
-        self.best_goal = Point()
+        self.unknown_threshold = 1  # Customize the threshold to determine unknown areas
+        self.best_goal = PoseStamped()
         self.nav_to_pose_client = ActionClient(self, NavigateToPose, 'navigate_to_pose')
         self.initialized = False
+        self.finished = False
         self.get_logger().info('Initialized')
 
     def map_callback(self, msg):
@@ -38,50 +39,92 @@ class GoalPositionPlanner(Node):
 
         # Find the unknown areas
         unknown_cells = []
+        border_cells = []
         for y in range(map_height):
             for x in range(map_width):
                 if grid[y][x] < self.unknown_threshold:
-                    unknown_cells.append((x, y))
+                    if self.is_border_cell(grid, x, y, map_width, map_height):
+                        border_cells.append((x, y))
+                    else:
+                        unknown_cells.append((x, y))
 
         # Evaluate frontier points and select the best goal position
-        self.evaluate_frontier_points(grid, unknown_cells, resolution)
-
-
+        self.evaluate_frontier_points(grid, border_cells, resolution)
 
         # Send the goal position to the robot's control system
         if self.initialized is False:
-            self.send_goal_position()
+            # self.send_goal_position()
+            self.navigator.goToPose(self.best_goal)
             self.initialized = True
-        # while self.navigator.getResult() == GoalStatus.STATUS_SUCCEEDED:
-        #     self.send_goal_position()
 
-        # 'STATUS_UNKNOWN': 0,
-        # 'STATUS_ACCEPTED': 1,
-        # 'STATUS_EXECUTING': 2,
-        # 'STATUS_CANCELING': 3,
-        # 'STATUS_SUCCEEDED': 4,
-        # 'STATUS_CANCELED': 5,
-        # 'STATUS_ABORTED': 6,
-            
+        if self.finished is True:
+            self.get_logger().info('------------Exploring finished-------------')
+            return
+
         if self.navigator.isNavComplete() is True and self.navigator.getResult() is not None:
-            self.send_goal_position()
+            self.navigator.goToPose(self.best_goal)
         self.get_logger().info('Goal has status code: {0}'.format(self.navigator.getResult()))
 
-    def evaluate_frontier_points(self, grid, frontier_points, resolution):
-        best_information_gain = 0.0
+    def is_border_cell(self, grid, x, y, map_width, map_height):
+        # Check if the cell is a border cell by checking its neighbors
+        neighbors = [
+            (x - 1, y),
+            (x + 1, y),
+            (x, y - 1),
+            (x, y + 1)
+        ]
 
+        for nx, ny in neighbors:
+            if nx < 0 or nx >= map_width or ny < 0 or ny >= map_height:
+                continue
+            if grid[ny][nx] >= self.unknown_threshold:
+                return True
+
+        return False
+
+
+    # def is_obstructed(self, grid, x, y):
+    #     obstacle_threshold = 90  # Threshold for considering a cell as an obstacle
+
+    #     # Check if the cell at the given coordinates is an obstacle
+    #     if grid[y][x] >= obstacle_threshold:
+    #         return True
+
+    #     # Check if any adjacent cells are obstacles
+    #     adjacent_cells = [(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)]
+    #     for adj_x, adj_y in adjacent_cells:
+    #         if 0 <= adj_x < len(grid[0]) and 0 <= adj_y < len(grid) and grid[adj_y][adj_x] >= obstacle_threshold:
+    #             return True
+
+    #     return False
+
+
+    def evaluate_frontier_points(self, grid, frontier_points, resolution):
+        if not frontier_points:
+            self.finished = True
+            return
+    
+        best_information_gain = float('-inf')  # Initialize with a negative value
         for frontier_point in frontier_points:
             x, y = frontier_point
-            goal = Point()
-            goal.x = x * resolution
-            goal.y = y * resolution
-
+            goal = PoseStamped()
+            goal.pose.position.x = x * resolution
+            goal.pose.position.y = y * resolution
+    
+            # # Check if the current frontier point is obstructed
+            # if self.is_obstructed(grid, x, y):
+            #     continue
+            
             # Compute the information gain for the current frontier point
             information_gain = self.compute_information_gain(grid, x, y)
-
+    
             if information_gain > best_information_gain:
                 self.best_goal = goal
                 best_information_gain = information_gain
+
+        self.get_logger().info('grid dimensions = {:.2f} {:.2f}'.format(len(grid), len(grid[0])))
+        self.get_logger().info('self.best_goal = {:.2f} {:.2f}'.format(self.best_goal.pose.position.x, self.best_goal.pose.position.y))
+    
 
     def compute_information_gain(self, grid, x, y):
         information_gain = 0.0
@@ -114,7 +157,7 @@ class GoalPositionPlanner(Node):
         if p_obstacle > 0:
             information_gain -= p_obstacle * math.log2(p_obstacle)
         if p_unknown > 0:
-            information_gain -= p_unknown * math.log2(p_unknown)
+            information_gain += p_unknown * math.log2(p_unknown)
 
         return information_gain
 
@@ -136,19 +179,19 @@ class GoalPositionPlanner(Node):
 
     #     self.result_future = self.goal_handle.get_result_async()
 
-    def send_goal_position(self):
-        self.get_logger().info('Started send_goal_position()')
-        self.timeout_duration = Duration(seconds=120)
-        goal_pose = PoseStamped()
-        goal_pose.pose.position.x = self.best_goal.x
-        goal_pose.pose.position.y = self.best_goal.y
-        self.navigator.goToPose(goal_pose)
-        self.start_time = self.navigator.get_clock().now()
-        self.i = 0
-        self.get_logger().info('Going to:\t x: %s\t y: %s\t z: %s\t w: %s' % (goal_pose.pose.position.x,
-                                                                    goal_pose.pose.position.y,
-                                                                    goal_pose.pose.orientation.z,
-                                                                    goal_pose.pose.orientation.w))
+    # def send_goal_position(self):
+    #     self.get_logger().info('Started send_goal_position()')
+    #     self.timeout_duration = Duration(seconds=120)
+    #     goal_pose = PoseStamped()
+    #     goal_pose.pose.position.x = self.best_goal.x
+    #     goal_pose.pose.position.y = self.best_goal.y
+    #     self.navigator.goToPose(goal_pose)
+    #     self.start_time = self.navigator.get_clock().now()
+    #     self.i = 0
+    #     self.get_logger().info('Going to:\t x: %s\t y: %s\t z: %s\t w: %s' % (goal_pose.pose.position.x,
+    #                                                                 goal_pose.pose.position.y,
+    #                                                                 goal_pose.pose.orientation.z,
+    #                                                                 goal_pose.pose.orientation.w))
 
     def _init_nav2(self):
         self.navigator = BasicNavigator()
