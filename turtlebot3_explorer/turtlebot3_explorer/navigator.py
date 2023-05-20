@@ -102,7 +102,9 @@ class BasicNavigator(Node):
         return self.feedback
 
     def getResult(self):
-        return self.status
+        rclpy.spin_until_future_complete(self, self.result_future, timeout_sec=0.10)
+        if self.result_future.result():
+            return self.status
 
     def waitUntilNav2Active(self):
         self._waitForNodeToActivate('bt_navigator')
