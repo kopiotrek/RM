@@ -37,6 +37,10 @@ def generate_launch_description():
                          'worlds', world_file_name)
     namespace1 = 'trb_1'
     namespace2 = 'trb_2'
+    tag_diff_drive_ros_params = diff_drive_plugin.fin('ros')
+    tag_diff_drive_ns = ET.SubElement(tag_diff_drive_ros_params, 'namespace')
+    tag_diff_drive_ns.text = '/' + args.robot_namespace
+    ros_tf_remap = ET.SubElement(tag_diff_drive_ros_params)
 
     map_dir = LaunchConfiguration(
         'map',
