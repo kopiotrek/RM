@@ -22,7 +22,7 @@ class Explorer(Node):
         )
         self.unknown_threshold = 0  # Customize the threshold to determine unknown areas
         self.radius = 10  # radius around the frontier point to calculate information gain
-        self.obstacle_treshold = 90  # Threshold for considering a cell as an obstacle
+        self.obstacle_treshold = 100  # Threshold for considering a cell as an obstacle
         self.best_goal = None
         self.initialized = False
         self.costmap_iniatilized = False
@@ -59,13 +59,13 @@ class Explorer(Node):
         frontier_points = []
         for y in range(self.map_height):
             for x in range(self.map_width):
-                if grid[x][y] < self.unknown_threshold and self.is_border_cell(grid, x, y): #TODO Here was [x][y], check for possible bugs
+                if grid[y][x] < self.unknown_threshold and self.is_border_cell(grid, x, y): #TODO Here was [x][y], check for possible bugs
                     frontier_points.append((x, y))
 
                 
 
         # Evaluate frontier points and select the best goal position
-        self.evaluate_frontier_points(grid, frontier_points, self.resolution)
+        self.evaluate_frontier_points(grid, frontier_points)
 
     def is_border_cell(self, grid, x, y):
             # Check if the cell is a border cell by checking its neighbors
@@ -79,7 +79,7 @@ class Explorer(Node):
             for nx, ny in neighbors:
                 if nx < 0 or nx >= self.map_width or ny < 0 or ny >= self.map_height:
                     continue
-                if grid[ny][nx] >= self.unknown_threshold:
+                if grid[ny][nx] is self.unknown_threshold:
                     return True
 
             return False
@@ -97,14 +97,14 @@ class Explorer(Node):
                 self.send_goal_position()
         
 
-    def evaluate_frontier_points(self, grid, frontier_points, resolution):
+    def evaluate_frontier_points(self, grid, frontier_points):
         best_information_gain = float('-inf')
 
         for frontier_point in frontier_points:
             x, y = frontier_point
             goal = PoseStamped()
-            goal.pose.position.x = x * resolution
-            goal.pose.position.y = y * resolution
+            goal.pose.position.x = x * self.resolution + self.costmap_origin.position.x
+            goal.pose.position.y = y * self.resolution + self.costmap_origin.position.y
 
             # Compute the information gain for the current frontier point
             information_gain = self.compute_information_gain(grid, x, y)
