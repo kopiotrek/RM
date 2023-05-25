@@ -1,4 +1,4 @@
-import rclpy, math
+import rclpy, math, csv, numpy
 from rclpy.node import Node
 from rclpy.duration import Duration
 from nav_msgs.msg import OccupancyGrid
@@ -22,12 +22,13 @@ class Explorer(Node):
         )
         self.unknown_threshold = 0  # Customize the threshold to determine unknown areas
         self.radius = 10  # radius around the frontier point to calculate information gain
-        self.obstacle_treshold = 100  # Threshold for considering a cell as an obstacle
-        self.best_goal = None
+        self.obstacle_treshold = 80  # Threshold for considering a cell as an obstacle
+        self.best_goal = PoseStamped()
         self.initialized = False
         self.costmap_iniatilized = False
         self.costmap_origin = Pose()
         self._init_nav2()
+        self.csv_file = "/home/pk/Documents/map_data.csv"
 
     def costmap_callback(self, msg):
         self.costmap_width = msg.info.width
@@ -45,6 +46,17 @@ class Explorer(Node):
         self.start_time = self.navigator.get_clock().now()
         self.timeout_duration = Duration(seconds=120)
 
+    def map_callback(self, msg):
+        if self.initialized is False and self.costmap_iniatilized:
+            self.get_best_goal(msg)
+            self.send_goal_position()
+            self.initialized = True
+        
+        elif self.costmap_iniatilized:
+            self.get_best_goal(msg)
+            if self.navigator.isTaskComplete():
+                self.send_goal_position()
+
     def get_best_goal(self, msg):
         # Process the map data and determine the best goal position
         self.map_data = msg.data
@@ -59,11 +71,9 @@ class Explorer(Node):
         frontier_points = []
         for y in range(self.map_height):
             for x in range(self.map_width):
-                if grid[y][x] < self.unknown_threshold and self.is_border_cell(grid, x, y): #TODO Here was [x][y], check for possible bugs
-                    frontier_points.append((x, y))
-
-                
-
+                if grid[y][x] < self.unknown_threshold:
+                    if self.is_border_cell(grid, x, y):
+                        frontier_points.append((x, y))
         # Evaluate frontier points and select the best goal position
         self.evaluate_frontier_points(grid, frontier_points)
 
@@ -78,39 +88,26 @@ class Explorer(Node):
 
             for nx, ny in neighbors:
                 if nx < 0 or nx >= self.map_width or ny < 0 or ny >= self.map_height:
-                    continue
-                if grid[ny][nx] is self.unknown_threshold:
+                    return False
+                if grid[ny][nx] >= self.unknown_threshold and grid[ny][nx] < self.obstacle_treshold:
                     return True
 
             return False
-
-
-    def map_callback(self, msg):
-        if self.initialized is False and self.costmap_iniatilized:
-            self.get_best_goal(msg)
-            self.send_goal_position()
-            self.initialized = True
-        
-        elif self.costmap_iniatilized:
-            self.get_best_goal(msg)
-            if self.navigator.isTaskComplete():
-                self.send_goal_position()
-        
 
     def evaluate_frontier_points(self, grid, frontier_points):
         best_information_gain = float('-inf')
 
         for frontier_point in frontier_points:
             x, y = frontier_point
-            goal = PoseStamped()
-            goal.pose.position.x = x * self.resolution + self.costmap_origin.position.x
-            goal.pose.position.y = y * self.resolution + self.costmap_origin.position.y
+            self.goal_grid = [x,y]
+
 
             # Compute the information gain for the current frontier point
             information_gain = self.compute_information_gain(grid, x, y)
 
             if information_gain > best_information_gain:
-                self.best_goal = goal
+                self.best_goal.pose.position.x = x * self.resolution + self.costmap_origin.position.x
+                self.best_goal.pose.position.y = y * self.resolution + self.costmap_origin.position.y
                 best_information_gain = information_gain
         
         if best_information_gain is float('-inf'):
@@ -118,16 +115,14 @@ class Explorer(Node):
 
     def compute_information_gain(self, grid, x, y):
         information_gain = 0.0
-        if abs(x) > self.costmap_width / 2:
-            return float('-inf')
-        if abs(y) > self.costmap_height / 2:
+        if x < 0 or x >= self.map_width or y < 0 or y >= self.map_height:
             return float('-inf')
 
         # Calculate the coordinates of the cells within the self.radius
         start_x = max(x - self.radius, 0)
-        end_x = min(x + self.radius, len(grid[0]) - 1)
+        end_x = min(x + self.radius, self.map_width - 1)
         start_y = max(y - self.radius, 0)
-        end_y = min(y + self.radius, len(grid) - 1)
+        end_y = min(y + self.radius,  self.map_height - 1)
 
         # Count the number of unknown and obstacle cells within the self.radius
         unknown_count = 0
@@ -154,8 +149,9 @@ class Explorer(Node):
 
     def send_goal_position(self):
         # Send the goal position to the robot's control system
-        if self.best_goal is not None:
+        if self.initialized is True:
             self.get_logger().info(f"Sending goal position: {self.best_goal.pose.position.x}, {self.best_goal.pose.position.y}")
+            self.get_logger().info(f"Goal grid position: {self.goal_grid[0]}, {self.goal_grid[1]}")
             self.navigator.goToPose(self.best_goal)
             # Add code to send the goal position to the robot's control system
         else:
