@@ -3,10 +3,14 @@ from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch_ros.actions import Node
 import xacro
+import argparse
+import xml.etree.ElementTree as ET
+import rclpy
 
 from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
 from launch.actions import OpaqueFunction
+from gazebo_msgs.srv import SpawnEntity
 
 
 def launch_setup(context, *args, **kwargs):
@@ -30,14 +34,40 @@ def launch_setup(context, *args, **kwargs):
         robot_desc_path = os.path.join(get_package_share_directory(
         package_description), "urdf", robot_file)
         robot_desc = xacro.process_file(robot_desc_path)
+        # We need to remap the transform (/tf) topic so each robot has its own.
+        # We do this by adding `ROS argument entries` to the urdf file for
+        # each plugin broadcasting a transform. These argument entries provide the
+        # remapping rule, i.e. /tf -> /<robot_id>/tf
+        tree = ET.parse(robot_desc_path)
+        root = tree.getroot()
+        imu_plugin = None
+        diff_drive_plugin = None 
+        print("DUPA0")
+        for plugin in root.iter('plugin'):
+            if 'turtlebot3_diff_drive' in plugin.attrib.values():
+                diff_drive_plugin = plugin
+                print("DUPA1")
+            elif 'turtlebot3_imu' in plugin.attrib.values():
+                imu_plugin = plugin
+                print("DUPA2")
+
+        # We change the namespace to the robots corresponding one
+        tag_diff_drive_ros_params = diff_drive_plugin.find('ros')
+        tag_diff_drive_ns = ET.SubElement(tag_diff_drive_ros_params, 'namespace')
+        tag_diff_drive_ns.text = '/' + args.robot_namespace
+        ros_tf_remap = ET.SubElement(tag_diff_drive_ros_params, 'remapping')
+        ros_tf_remap.text = '/tf:=/' + args.robot_namespace + '/tf'
+        robot_desc = xacro.process_file(robot_desc_path, mappings={'box_bot_name' : box_bot_name})
     elif extension == "xacro":
         robot_desc_path = os.path.join(get_package_share_directory(
         package_description), "robot", robot_file)
         # We load the XACRO file with ARGUMENTS
-        robot_desc = xacro.process_file(robot_desc_path, mappings={'box_bot_name' : box_bot_name})
+
+
     else:
         assert False, "Extension of robot file not suppored = "+str(extension)
   
+
  
     xml = robot_desc.toxml()
 
