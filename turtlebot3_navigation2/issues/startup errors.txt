@@ -1,0 +1,47 @@
+błędy:
+[nav2_gazebo_spawner-2] Traceback (most recent call last):
+[nav2_gazebo_spawner-2]   File "/opt/ros/foxy/lib/python3.8/site-packages/rclpy/__init__.py", line 216, in spin_until_future_complete
+[nav2_gazebo_spawner-2]     executor.add_node(node)
+[nav2_gazebo_spawner-2] AttributeError: 'float' object has no attribute 'add_node'
+[nav2_gazebo_spawner-2] 
+[nav2_gazebo_spawner-2] During handling of the above exception, another exception occurred:
+[nav2_gazebo_spawner-2] 
+[nav2_gazebo_spawner-2] Traceback (most recent call last):
+[nav2_gazebo_spawner-2]   File "/opt/ros/foxy/lib/nav2_gazebo_spawner/nav2_gazebo_spawner", line 11, in <module>
+[nav2_gazebo_spawner-2]     load_entry_point('nav2-gazebo-spawner==0.3.0', 'console_scripts', 'nav2_gazebo_spawner')()
+[nav2_gazebo_spawner-2]   File "/opt/ros/foxy/lib/python3.8/site-packages/nav2_gazebo_spawner/nav2_gazebo_spawner.py", line 102, in main
+[nav2_gazebo_spawner-2]     rclpy.spin_until_future_complete(node, future, args.timeout)
+[nav2_gazebo_spawner-2]   File "/opt/ros/foxy/lib/python3.8/site-packages/rclpy/__init__.py", line 219, in spin_until_future_complete
+[nav2_gazebo_spawner-2]     executor.remove_node(node)
+[nav2_gazebo_spawner-2] AttributeError: 'float' object has no attribute 'remove_node'
+[ERROR] [nav2_gazebo_spawner-2]: process has died [pid 26860, exit code 1, cmd '/opt/ros/foxy/lib/nav2_gazebo_spawner/nav2_gazebo_spawner --robot_name robot1 --robot_namespace robot1 --turtlebot_type waffle -x 0.0 -y 0.5 -z 0.01 --ros-args'].
+
+...
+
+[map_server-5] [WARN] [1685881997.059265735] [rcl_lifecycle]: No transition matching 1 found for current state active
+[map_server-5] [ERROR] [1685881997.059305935] []: Unable to start transition 1 from current state active: Transition is not registered., at /tmp/binarydeb/ros-foxy-rcl-lifecycle-1.1.14/src/rcl_lifecycle.c:350
+[lifecycle_manager-7] [ERROR] [1685881997.059944667] [robot1.lifecycle_manager_localization]: Failed to change state for node: map_server
+[lifecycle_manager-7] [ERROR] [1685881997.059986317] [robot1.lifecycle_manager_localization]: Failed to bring up all requested nodes. Aborting bringup.
+[rviz2-3] [INFO] [1685881997.067707021] [robot1.rviz2]: Waiting for the lifecycle_manager_navigation/manage_nodes service...
+[rviz2-3] [INFO] [1685881997.067913485] [robot1.rviz2]: Sending lifecycle_manager_navigation/manage_nodes request
+[lifecycle_manager-13] [INFO] [1685881997.068220818] [robot1.lifecycle_manager_navigation]: Starting managed nodes bringup...
+[lifecycle_manager-13] [INFO] [1685881997.068305771] [robot1.lifecycle_manager_navigation]: Configuring controller_server
+[lifecycle_manager-13] [INFO] [1685881997.069646020] [robot1.lifecycle_manager_navigation]: Configuring planner_server
+[lifecycle_manager-13] [INFO] [1685881997.070758960] [robot1.lifecycle_manager_navigation]: Configuring recoveries_server
+[controller_server-8] [WARN] [1685881997.068803159] [rcl_lifecycle]: No transition matching 1 found for current state inactive
+[controller_server-8] [ERROR] [1685881997.068844763] []: Unable to start transition 1 from current state inactive: Transition is not registered., at /tmp/binarydeb/ros-foxy-rcl-lifecycle-1.1.14/src/rcl_lifecycle.c:350
+[planner_server-9] [WARN] [1685881997.069962718] [rcl_lifecycle]: No transition matching 1 found for current state inactive
+[planner_server-9] [ERROR] [1685881997.070001148] []: Unable to start transition 1 from current state inactive: Transition is not registered., at /tmp/binarydeb/ros-foxy-rcl-lifecycle-1.1.14/src/rcl_lifecycle.c:350
+[recoveries_server-10] [WARN] [1685881997.071055271] [rcl_lifecycle]: No transition matching 1 found for current state inactive
+[recoveries_server-10] [ERROR] [1685881997.071107768] []: Unable to start transition 1 from current state inactive: Transition is not registered., at /tmp/binarydeb/ros-foxy-rcl-lifecycle-1.1.14/src/rcl_lifecycle.c:350
+[lifecycle_manager-13] [INFO] [1685881997.071856214] [robot1.lifecycle_manager_navigation]: Configuring bt_navigator
+[bt_navigator-11] [INFO] [1685881997.072147395] [robot1.bt_navigator]: Configuring
+[bt_navigator-11] [WARN] [1685881997.072309301] [rcl.logging_rosout]: Publisher already registered for provided node name. If this is due to multiple nodes with the same name then all logs for that logger name will go out over the existing publisher. As soon as any node with that name is destructed it will unregister the publisher, preventing any further logs for that name from being published on the rosout topic.
+[rviz2-3] [INFO] [1685881997.098666031] [robot1.rviz2]: Message Filter dropping message: frame 'base_scan' at time 6.395 for reason 'Unknown'
+[rviz2-3] [INFO] [1685881997.148024153] [robot1.rviz2]: Message Filter dropping message: frame 'base_scan' at time 6.595 for reason 'Unknown'
+[bt_navigator-11] [ERROR] [1685881997.311696429] []: Caught exception in callback for transition 10
+[bt_navigator-11] [ERROR] [1685881997.311739369] []: Original error: Could not load library: libnav2_compute_path_through_poses_action_bt_node.so: cannot open shared object file: No such file or directory
+[bt_navigator-11] [WARN] [1685881997.311779925] []: Error occurred while doing error handling.
+[bt_navigator-11] [FATAL] [1685881997.311800565] [robot1.bt_navigator]: Lifecycle node bt_navigator does not have error state implemented
+[lifecycle_manager-13] [ERROR] [1685881997.314779575] [robot1.lifecycle_manager_navigation]: Failed to change state for node: bt_navigator
+[lifecycle_manager-13] [ERROR] [1685881997.314848945] [robot1.lifecycle_manager_navigation]: Failed to bring up all requested nodes. Aborting bringup.
