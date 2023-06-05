@@ -32,6 +32,7 @@ def generate_launch_description():
     launch_dir = os.path.join(bringup_dir, 'launch')
     # This checks that tb3 exists needed for the URDF. If not using TB3, its safe to remove.
     _ = get_package_share_directory('turtlebot3_gazebo')
+    gazebo_ros_package_dir = get_package_share_directory('gazebo_ros')
 
     # Create the launch configuration variables
     slam = LaunchConfiguration('slam')
@@ -145,7 +146,7 @@ def generate_launch_description():
         #              https://github.com/ROBOTIS-GIT/turtlebot3_simulations/issues/91
         # default_value=os.path.join(get_package_share_directory('turtlebot3_gazebo'),
         # worlds/turtlebot3_worlds/waffle.model')
-        default_value=os.path.join(bringup_dir, 'worlds', 'world_only.model'),
+        default_value=os.path.join(bringup_dir, 'worlds', 'empty.model'),
         description='Full path to world model file to load')
 
     declare_robot_name_cmd = DeclareLaunchArgument(
@@ -158,7 +159,23 @@ def generate_launch_description():
         default_value=os.path.join(bringup_dir, 'worlds', 'waffle.model'),
         description='Full path to robot sdf file to spawn the robot in gazebo')
 
+    start_gazebo_cmd = ExecuteProcess(
+        cmd=['gazebo', '--verbose', '-s', 'libgazebo_ros_init.so',
+                                     '-s', 'libgazebo_ros_factory.so', world],
+        output='screen')
+
     # Specify the actions
+    gazebosrv = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            [os.path.join(gazebo_ros_package_dir, 'launch', 'gzserver.launch.py')]),
+        launch_arguments={'verbose': 'true'}.items()
+    )
+
+    gazebocli = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            [os.path.join(gazebo_ros_package_dir, 'launch', 'gzclient.launch.py')])
+    )
+    
     start_gazebo_server_cmd = ExecuteProcess(
         condition=IfCondition(use_simulator),
         cmd=['gzserver', '-s', 'libgazebo_ros_init.so',
@@ -171,7 +188,7 @@ def generate_launch_description():
         cmd=['gzclient'],
         cwd=[launch_dir], output='screen')
 
-    urdf = os.path.join(bringup_dir, 'urdf', 'turtlebot3_waffle.urdf')
+    urdf = os.path.join(get_package_share_directory('turtlebot3_description'), 'urdf', 'turtlebot3_waffle.urdf')
     with open(urdf, 'r') as infp:
         robot_description = infp.read()
 
@@ -242,8 +259,11 @@ def generate_launch_description():
     ld.add_action(declare_use_respawn_cmd)
 
     # Add any conditioned actions
-    ld.add_action(start_gazebo_server_cmd)
-    ld.add_action(start_gazebo_client_cmd)
+    # ld.add_action(start_gazebo_cmd)
+    ld.add_action(gazebosrv)
+    ld.add_action(gazebocli)
+    # ld.add_action(start_gazebo_server_cmd)
+    # ld.add_action(start_gazebo_client_cmd)
     ld.add_action(start_gazebo_spawner_cmd)
 
     # Add the actions to launch all of the navigation nodes
