@@ -205,7 +205,7 @@ def generate_launch_description():
     for spawn_robot_cmd in spawn_robots_cmds:
         ld.add_action(spawn_robot_cmd)
 
-    for simulation_instance_cmd in nav_instances_cmds:
-        ld.add_action(simulation_instance_cmd)
+    # for simulation_instance_cmd in nav_instances_cmds:
+    #     ld.add_action(simulation_instance_cmd)
 
     return ld
