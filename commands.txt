@@ -1,0 +1,3 @@
+ros2 action send_goal supervisor turtlebot_interfaces/action/ReserveSector "{sectors: [3, 2, 5]}"
+
+ros2 topic pub --once /supervisor/free_sector std_msgs/msg/Int16 "{data: 3}"

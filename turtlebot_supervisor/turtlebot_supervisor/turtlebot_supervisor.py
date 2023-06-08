@@ -6,7 +6,7 @@ from rclpy.action import ActionServer, CancelResponse, GoalResponse
 from nav_msgs.msg import OccupancyGrid
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.callback_groups import ReentrantCallbackGroup
-from std_msgs.msg import Int16 
+from std_msgs.msg import Int8
 from turtlebot_interfaces.action import ReserveSector
 
 class TurtleBotSupervisor(Node):
@@ -53,7 +53,7 @@ class TurtleBotSupervisor(Node):
 
     def _create_subscriber(self, supervisor_callback_group):
         self.subscriber_free_sector = self.create_subscription(
-            Int16, '/supervisor/free_sector', self.listener_callback, 10, callback_group=supervisor_callback_group)
+            Int8, '/supervisor/free_sector', self.listener_callback, 10, callback_group=supervisor_callback_group)
         
     def _create_action(self, supervisor_callback_group):
         self._action_server = ActionServer(self, ReserveSector, 'supervisor', 
