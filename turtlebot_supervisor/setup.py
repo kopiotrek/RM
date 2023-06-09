@@ -25,6 +25,7 @@ setup(
         'console_scripts': [
             'supervisor = turtlebot_supervisor.turtlebot_supervisor:main',
             'controller = turtlebot_supervisor.turtlebot_controller:main',
+            'navigator = turtlebot_supervisor.turtlebot_navigator:main',
         ],
     },
 )
