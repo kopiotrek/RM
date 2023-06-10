@@ -35,12 +35,13 @@ from launch.substitutions import LaunchConfiguration, TextSubstitution
 def generate_launch_description():
     # Get the launch directory
     bringup_dir = get_package_share_directory('nav2_bringup')
+    local_bringup_dir = get_package_share_directory('turtlebot3_navigation2')
     launch_dir = os.path.join(bringup_dir, 'launch')
 
     # Names and poses of the robots
     robots = [
-        {'name': 'robot1', 'x_pose': 0.0, 'y_pose': 0.5, 'z_pose': 0.01},
-        {'name': 'robot2', 'x_pose': 0.0, 'y_pose': -0.5, 'z_pose': 0.01}]
+        # {'name': 'robot1', 'x_pose': 0.0, 'y_pose': 0.5, 'z_pose': 0.01},
+        {'name': 'robot1', 'x_pose': 0.0, 'y_pose': -0.5, 'z_pose': 0.01}]
 
     # Simulation settings
     world = LaunchConfiguration('world')
@@ -59,7 +60,8 @@ def generate_launch_description():
     # Declare the launch arguments
     declare_world_cmd = DeclareLaunchArgument(
         'world',
-        default_value=os.path.join(bringup_dir, 'worlds', 'world_only.model'),
+        # default_value=os.path.join(bringup_dir, 'worlds', 'world_only.model'),
+        default_value=os.path.join(local_bringup_dir, 'worlds', 'sala_pwr.model'),
         description='Full path to world file to load')
 
     declare_simulator_cmd = DeclareLaunchArgument(
@@ -69,7 +71,8 @@ def generate_launch_description():
 
     declare_map_yaml_cmd = DeclareLaunchArgument(
         'map',
-        default_value=os.path.join(bringup_dir, 'maps', 'turtlebot3_world.yaml'),
+        # default_value=os.path.join(bringup_dir, 'maps', 'turtlebot3_world.yaml'),
+        default_value=os.path.join(local_bringup_dir, 'map', 'turtlebot3_world.yaml'),        
         description='Full path to map file to load')
 
     declare_robot1_params_file_cmd = DeclareLaunchArgument(
@@ -190,7 +193,7 @@ def generate_launch_description():
     # Declare the launch options
     ld.add_action(declare_simulator_cmd)
     ld.add_action(declare_world_cmd)
-    ld.add_action(declare_map_yaml_cmd)
+    # ld.add_action(declare_map_yaml_cmd)
     ld.add_action(declare_robot1_params_file_cmd)
     ld.add_action(declare_robot2_params_file_cmd)
     ld.add_action(declare_bt_xml_cmd)
