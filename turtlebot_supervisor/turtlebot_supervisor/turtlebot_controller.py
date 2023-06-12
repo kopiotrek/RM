@@ -1,9 +1,11 @@
 import rclpy
 import math
 from rclpy.node import Node
+from rclpy.action import ActionClient
 from nav_msgs.msg import OccupancyGrid
-from geometry_msgs.msg import PoseWithCovarianceStamped
+from geometry_msgs.msg import PoseWithCovarianceStamped, PoseStamped
 from std_msgs.msg import Int8
+from turtlebot_interfaces.action import ReserveSector
 
 class TurtlebotController(Node):
 
@@ -13,10 +15,22 @@ class TurtlebotController(Node):
         super().__init__('turtlebot_controller')
 
         self.last_pose = [0, 0]
+        self.next_pose = [0, 0]
         self._handle_parameters()
         self._create_subscribers()
         self._create_publishers()
         self.get_logger().info(f'topic: {self.namespace}/amcl_pose')
+        self.get_logger().info(f'topic: {self.namespace}/current_goal')
+
+        # self._action_client = ActionClient(self, ReserveSector, 'reserve')
+
+    def send_goal(self, order):
+        goal_msg = ReserveSector.Goal()
+        goal_msg.sector = order
+
+        self._action_client.wait_for_server()
+
+        return self._action_client.send_goal_async(goal_msg)
         
     def _handle_parameters(self):
         self._declare_default_parameters()
@@ -27,14 +41,15 @@ class TurtlebotController(Node):
         self.size_y = self.get_parameter('size_y').value
 
     def _declare_default_parameters(self):
-        self.declare_parameter('namespace', '')
-        self.declare_parameter('sector_lower_bound', 0.35)
-        self.declare_parameter('sector_upper_bound', 0.65)
-        self.declare_parameter('size_x', 5)
-        self.declare_parameter('size_y', 5)
+        self.declare_parameter('namespace', '/robot1')
+        self.declare_parameter('sector_lower_bound', 0.15)
+        self.declare_parameter('sector_upper_bound', 0.85)
+        self.declare_parameter('size_x', 10)
+        self.declare_parameter('size_y', 10)
 
     def _create_subscribers(self):
-        self.subscription_pose = self.create_subscription(PoseWithCovarianceStamped, self.namespace + '/amcl_pose', self.listener_callback_pose, 10)
+        # self.subscription_pose = self.create_subscription(PoseWithCovarianceStamped, self.namespace + '/amcl_pose', self.listener_callback_pose, 10)
+        self.subscription_next_sector = self.create_subscription(PoseStamped, self.namespace + '/current_goal', self.listener_callback_next_sector, 10)
 
     def _create_publishers(self):
         self.publisher_free_sector = self.create_publisher(Int8, '/supervisor/free_sector', 10)
@@ -44,10 +59,17 @@ class TurtlebotController(Node):
         self.last_pose[1] = robot_pose.pose.pose.position.y
         if self.is_decimal_in_range(self.last_pose[0]) and self.is_decimal_in_range(self.last_pose[1]):
             sector_id = Int8()
-            sector_id.data = int(self.last_pose[0]) + (int(self.last_pose[1]) * self.size_x)
+            sector_id.data = self.calculate_sector_id(math.floor(self.last_pose[0]), math.floor(self.last_pose[1]))
             self.get_logger().info(f'sector id: {sector_id.data}')
             self.publisher_free_sector.publish(sector_id)
         self.get_logger().info(f'robot pose: {self.last_pose}')
+
+    def listener_callback_next_sector(self, robot_pose):
+        self.next_pose[0] = int(robot_pose.pose.position.x)
+        self.next_pose[1] = int(robot_pose.pose.position.y)
+        self.get_logger().info(f'robot pose: {self.next_pose}')
+        self.send_goal(int(self.next_pose[0]) + (int(self.next_pose[1]) * self.size_x))
+        self.get_logger().info(f'robot pose: {self.next_pose}')
 
     def is_decimal_in_range(self, value):
         value_decimal = abs(value % 1)
@@ -56,6 +78,13 @@ class TurtlebotController(Node):
             return True
         else:
             return False
+    
+    def calculate_sector_id(self, x, y):
+        transformed_x = x + self.size_x // 2
+        transformed_y = y + self.size_y // 2
+        sector_id = (self.size_y - transformed_y - 1) * self.size_x + transformed_x
+        return int(sector_id)
+
 
 def main(args=None):
     rclpy.init(args=args)
