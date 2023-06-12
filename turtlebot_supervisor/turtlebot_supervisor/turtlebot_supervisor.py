@@ -30,8 +30,8 @@ class TurtleBotSupervisor(Node):
 
     def _declare_default_parameters(self):
         self.declare_parameter('grid_frame_id', 'map')
-        self.declare_parameter('size_x', 5)
-        self.declare_parameter('size_y', 5)
+        self.declare_parameter('size_x', 10)
+        self.declare_parameter('size_y', 10)
         self.declare_parameter('resolution', 1.0)
 
     def _create_map(self):
@@ -40,13 +40,13 @@ class TurtleBotSupervisor(Node):
         self.grid.info.resolution = self.resolution
         self.grid.info.width = self.size_x
         self.grid.info.height = self.size_y
-        self.grid.info.origin.position.x = 0.0
-        self.grid.info.origin.position.y = 0.0
+        self.grid.info.origin.position.x = - self.size_x / 2
+        self.grid.info.origin.position.y = - self.size_y / 2
         self.grid.data = np.full(self.size_x * self.size_y, 0, dtype=int).tolist()
         self.get_logger().info(f'Map size: x: {self.grid.info.width}, y: {self.grid.info.height}, resolution: {self.grid.info.resolution}.')
 
     def _create_publishers(self):
-        self.publisher_occupancy_grid = self.create_publisher(OccupancyGrid, '/supervisor_map', 10)
+        self.publisher_occupancy_grid = self.create_publisher(OccupancyGrid, '/supervisor/map', 10)
 
     def _create_timers(self):
         self.timer_mine_publisher = self.create_timer(1.0, self.publish_grid)
