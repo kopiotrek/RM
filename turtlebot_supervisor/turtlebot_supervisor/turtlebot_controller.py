@@ -16,13 +16,16 @@ class TurtlebotController(Node):
 
         self.last_pose = [0, 0]
         self.next_pose = [0, 0]
+        self.last_requested_sector_id = -1
+        self.last_sector_id = -1
+        self.current_sector_id = -1
         self._handle_parameters()
         self._create_subscribers()
         self._create_publishers()
         self.get_logger().info(f'topic: {self.namespace}/amcl_pose')
         self.get_logger().info(f'topic: {self.namespace}/current_goal')
 
-        # self._action_client = ActionClient(self, ReserveSector, 'reserve')
+        self._action_client = ActionClient(self, ReserveSector, 'supervisor')
 
     def send_goal(self, order):
         goal_msg = ReserveSector.Goal()
@@ -48,7 +51,7 @@ class TurtlebotController(Node):
         self.declare_parameter('size_y', 10)
 
     def _create_subscribers(self):
-        # self.subscription_pose = self.create_subscription(PoseWithCovarianceStamped, self.namespace + '/amcl_pose', self.listener_callback_pose, 10)
+        self.subscription_pose = self.create_subscription(PoseWithCovarianceStamped, self.namespace + '/amcl_pose', self.listener_callback_pose, 10)
         self.subscription_next_sector = self.create_subscription(PoseStamped, self.namespace + '/current_goal', self.listener_callback_next_sector, 10)
 
     def _create_publishers(self):
@@ -57,19 +60,28 @@ class TurtlebotController(Node):
     def listener_callback_pose(self, robot_pose):
         self.last_pose[0] = robot_pose.pose.pose.position.x
         self.last_pose[1] = robot_pose.pose.pose.position.y
+
         if self.is_decimal_in_range(self.last_pose[0]) and self.is_decimal_in_range(self.last_pose[1]):
-            sector_id = Int8()
-            sector_id.data = self.calculate_sector_id(math.floor(self.last_pose[0]), math.floor(self.last_pose[1]))
-            self.get_logger().info(f'sector id: {sector_id.data}')
-            self.publisher_free_sector.publish(sector_id)
-        self.get_logger().info(f'robot pose: {self.last_pose}')
+            
+            self.current_sector_id = self.calculate_sector_id(math.floor(self.last_pose[0]), math.floor(self.last_pose[1]))
+
+            if self.current_sector_id != self.last_sector_id:
+                sector_id = Int8()
+                sector_id.data = self.last_sector_id
+                self.publisher_free_sector.publish(sector_id)
+                self.last_sector_id = self.current_sector_id
+
+            self.get_logger().info(f'sector id: {self.last_sector_id}')
 
     def listener_callback_next_sector(self, robot_pose):
-        self.next_pose[0] = int(robot_pose.pose.position.x)
-        self.next_pose[1] = int(robot_pose.pose.position.y)
-        self.get_logger().info(f'robot pose: {self.next_pose}')
-        self.send_goal(int(self.next_pose[0]) + (int(self.next_pose[1]) * self.size_x))
-        self.get_logger().info(f'robot pose: {self.next_pose}')
+        self.next_pose[0] = math.floor(robot_pose.pose.position.x)
+        self.next_pose[1] = math.floor(robot_pose.pose.position.y)
+        self.get_logger().info(f'robot requested pose: {self.next_pose}')
+        sector_id = self.calculate_sector_id(self.next_pose[0], self.next_pose[1])
+        if sector_id != self.last_requested_sector_id:
+            self.send_goal(sector_id)
+            self.last_requested_sector_id = sector_id
+        # self.get_logger().info(f'robot pose: {self.next_pose}')
 
     def is_decimal_in_range(self, value):
         value_decimal = abs(value % 1)
