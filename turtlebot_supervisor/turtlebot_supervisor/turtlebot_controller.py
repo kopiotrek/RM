@@ -2,8 +2,7 @@ import rclpy
 import math
 from rclpy.node import Node
 from rclpy.action import ActionClient
-from nav_msgs.msg import OccupancyGrid
-from geometry_msgs.msg import PoseWithCovarianceStamped, PoseStamped
+from geometry_msgs.msg import PoseWithCovarianceStamped, PoseStamped, Twist
 from std_msgs.msg import Int8
 from turtlebot_interfaces.action import ReserveSector
 
@@ -19,21 +18,39 @@ class TurtlebotController(Node):
         self.last_requested_sector_id = -1
         self.last_sector_id = -1
         self.current_sector_id = -1
+
         self._handle_parameters()
         self._create_subscribers()
         self._create_publishers()
-        self.get_logger().info(f'topic: {self.namespace}/amcl_pose')
-        self.get_logger().info(f'topic: {self.namespace}/current_goal')
+        self._create_timers()
 
         self._action_client = ActionClient(self, ReserveSector, 'supervisor')
 
-    def send_goal(self, order):
+    def send_goal(self, sector_id):
         goal_msg = ReserveSector.Goal()
-        goal_msg.sector = order
+        goal_msg.sector = sector_id
+
+        self.timer_stop_robot.reset()
 
         self._action_client.wait_for_server()
 
-        return self._action_client.send_goal_async(goal_msg)
+        self._send_goal_future = self._action_client.send_goal_async(goal_msg)
+
+        self._send_goal_future.add_done_callback(self.goal_response_callback)
+
+    def goal_response_callback(self, future):
+        goal_handle = future.result()
+        if not goal_handle.accepted:
+            self.get_logger().info('Goal rejected')
+            return
+        
+        self._get_result_future = goal_handle.get_result_async()
+        self._get_result_future.add_done_callback(self.get_result_callback)
+
+    def get_result_callback(self, future):
+        result = future.result().result
+        if result.permission:
+            self.timer_stop_robot.cancel()
         
     def _handle_parameters(self):
         self._declare_default_parameters()
@@ -56,6 +73,17 @@ class TurtlebotController(Node):
 
     def _create_publishers(self):
         self.publisher_free_sector = self.create_publisher(Int8, '/supervisor/free_sector', 10)
+        self.publisher_stop_robot = self.create_publisher(Twist, self.namespace + '/cmd_vel', 10)
+    
+    def _create_timers(self):
+        self.timer_stop_robot = self.create_timer(0.01, self.timer_callback)
+        self.timer_stop_robot.cancel()
+
+    def timer_callback(self):
+        twist = Twist()
+        twist.linear.x = 0.0
+        self.publisher_stop_robot.publish(twist)
+        self.get_logger().info('robot stop')
 
     def listener_callback_pose(self, robot_pose):
         self.last_pose[0] = robot_pose.pose.pose.position.x
@@ -71,17 +99,14 @@ class TurtlebotController(Node):
                 self.publisher_free_sector.publish(sector_id)
                 self.last_sector_id = self.current_sector_id
 
-            self.get_logger().info(f'sector id: {self.last_sector_id}')
 
     def listener_callback_next_sector(self, robot_pose):
         self.next_pose[0] = robot_pose.pose.position.x
         self.next_pose[1] = robot_pose.pose.position.y
-        self.get_logger().info(f'robot requested pose: {self.next_pose}')
         sector_id = self.calculate_sector_id(math.floor(self.next_pose[0]), - math.floor(self.next_pose[1] + 1))
         if sector_id != self.last_requested_sector_id:
             self.send_goal(sector_id)
             self.last_requested_sector_id = sector_id
-        # self.get_logger().info(f'robot pose: {self.next_pose}')
 
     def is_decimal_in_range(self, value):
         value_decimal = abs(value % 1)

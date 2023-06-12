@@ -1,7 +1,9 @@
+from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch_ros.actions import Node
-from launch.actions import DeclareLaunchArgument
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
 from launch.substitutions import LaunchConfiguration
+from launch.launch_description_sources import PythonLaunchDescriptionSource
 
 
 def generate_launch_description():
@@ -46,6 +48,12 @@ def generate_launch_description():
         emulate_tty=True
     )
 
+    multi_navigation = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            [get_package_share_directory('turtlebot3_navigation2'), '/launch/multi_tb3_navigation_launch.py']),
+        launch_arguments={}.items()
+    )
+
     return LaunchDescription([
         size_x_arg,
         size_y_arg,
@@ -53,5 +61,6 @@ def generate_launch_description():
         namespace_2_arg,
         robot1_controller,
         robot2_controller,
-        supervisor
+        supervisor, 
+        multi_navigation
     ])
