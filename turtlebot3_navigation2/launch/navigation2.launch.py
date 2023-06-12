@@ -21,7 +21,7 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import LaunchConfiguration
+from launch.substitutions import LaunchConfiguration, TextSubstitution
 from launch_ros.actions import Node
 
 TURTLEBOT3_MODEL = os.environ['TURTLEBOT3_MODEL']
@@ -29,19 +29,26 @@ TURTLEBOT3_MODEL = os.environ['TURTLEBOT3_MODEL']
 
 def generate_launch_description():
     use_sim_time = LaunchConfiguration('use_sim_time', default='false')
-
+    nav2_bringup = get_package_share_directory('nav2_bringup')
     rst_launch_file_dir = os.path.join(get_package_share_directory('turtlebot3_bringup'), 'launch')
     pkg_gazebo_ros = get_package_share_directory('gazebo_ros')
-    world_file_name = 'turtlebot3_worlds/' + TURTLEBOT3_MODEL + '.model'
+    # world_file_name = 'turtlebot3_worlds/' + TURTLEBOT3_MODEL + '.model'
+    world_file_name = 'sala_pwr.model'
     world = os.path.join(get_package_share_directory('turtlebot3_gazebo'),
                          'worlds', world_file_name)
 
+    # map_dir = LaunchConfiguration(
+    #     'map',
+    #     default=os.path.join(
+    #         get_package_share_directory('turtlebot3_navigation2'),
+    #         'map',
+    #         'turtlebot3_world.yaml'))
     map_dir = LaunchConfiguration(
         'map',
         default=os.path.join(
             get_package_share_directory('turtlebot3_navigation2'),
             'map',
-            'turtlebot3_world.yaml'))
+            'sala_pwr.yaml'))
 
     param_file_name = TURTLEBOT3_MODEL + '.yaml'
     param_dir = LaunchConfiguration(
@@ -94,6 +101,17 @@ def generate_launch_description():
             PythonLaunchDescriptionSource([rst_launch_file_dir, '/turtlebot3_state_publisher.launch.py']),
             launch_arguments={'use_sim_time': use_sim_time}.items(),
         ),
+
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(os.path.join(nav2_bringup, 'launch',
+                                                       'spawn_tb3_launch.py')),
+            launch_arguments={
+                              'x_pose': TextSubstitution(text=str(0.0)),
+                              'y_pose': TextSubstitution(text=str(0.0)),
+                              'z_pose': TextSubstitution(text=str(0.0)),
+                              'robot_name': '',
+                              'turtlebot_type': TextSubstitution(text='waffle')
+                              }.items()),
         
 
         # IncludeLaunchDescription(

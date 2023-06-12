@@ -34,7 +34,7 @@ from rclpy.duration import Duration
 
 
 class NavigationResult(Enum):
-    UKNOWN = 0
+    UNKNOWN = 0
     SUCCEEDED = 1
     CANCELED = 2
     FAILED = 3
@@ -332,21 +332,9 @@ class BasicNavigator(Node):
         self.get_logger().debug(msg)
         return
 
-
-def main():
-    rclpy.init()
+def startGoingAround(robot_id):
 
     navigator = BasicNavigator()
-
-    # Set our demo's initial pose
-    # initial_pose = PoseStamped()
-    # initial_pose.header.frame_id = 'map'
-    # initial_pose.header.stamp = navigator.get_clock().now().to_msg()
-    # initial_pose.pose.position.x = 0.0
-    # initial_pose.pose.position.y = 0.5
-    # initial_pose.pose.orientation.z = 0.0
-    # initial_pose.pose.orientation.w = 0.0
-    # navigator.setInitialPose(initial_pose)
 
     # Activate navigation, if not autostarted. This should be called after setInitialPose()
     # or this will initialize at the origin of the map and update the costmap with bogus readings.
@@ -355,7 +343,6 @@ def main():
 
     # Wait for navigation to fully activate, since autostarting nav2
     navigator.waitUntilNav2Active()
-
     # If desired, you can change or load the map as well
     # navigator.changeMap('/path/to/map.yaml')
 
@@ -369,35 +356,46 @@ def main():
     goal_pose1 = PoseStamped()
     goal_pose1.header.frame_id = 'map'
     goal_pose1.header.stamp = navigator.get_clock().now().to_msg()
-    goal_pose1.pose.position.x = 0.5
-    goal_pose1.pose.position.y = 0.5
-    goal_pose1.pose.orientation.w = 0.0
-    goal_pose1.pose.orientation.z = 0.0
+    goal_pose1.pose.position.x = -0.5
+    goal_pose1.pose.position.y = -0.5
+    goal_pose1.pose.orientation.w = 0.9238795
+    goal_pose1.pose.orientation.z = 0.3826834
     goal_poses.append(goal_pose1)
 
     # additional goals can be appended
     goal_pose2 = PoseStamped()
     goal_pose2.header.frame_id = 'map'
     goal_pose2.header.stamp = navigator.get_clock().now().to_msg()
-    goal_pose2.pose.position.x = 1.0
+    goal_pose2.pose.position.x = -0.5
     goal_pose2.pose.position.y = 0.5
-    goal_pose2.pose.orientation.w = 0.0
-    goal_pose2.pose.orientation.z = 0.0
+    goal_pose2.pose.orientation.w = 0.3826834
+    goal_pose2.pose.orientation.z = 0.9238795
     goal_poses.append(goal_pose2)
     goal_pose3 = PoseStamped()
     goal_pose3.header.frame_id = 'map'
     goal_pose3.header.stamp = navigator.get_clock().now().to_msg()
-    goal_pose3.pose.position.x = 1.5
+    goal_pose3.pose.position.x = -1.5
     goal_pose3.pose.position.y = 0.5
-    goal_pose3.pose.orientation.w = 0.0
-    goal_pose3.pose.orientation.z = 0.0
+    goal_pose3.pose.orientation.w = -0.3826834
+    goal_pose3.pose.orientation.z = 0.9238795
     goal_poses.append(goal_pose3)
+    goal_pose4 = PoseStamped()
+    goal_pose4.header.frame_id = 'map'
+    goal_pose4.header.stamp = navigator.get_clock().now().to_msg()
+    goal_pose4.pose.position.x = -1.5
+    goal_pose4.pose.position.y = -0.5
+    goal_pose4.pose.orientation.w = 0.3826834
+    goal_pose4.pose.orientation.z = -0.9238795
+    goal_poses.append(goal_pose4)
+
+    # sanity check a valid path exists
+    # path = navigator.getPath(initial_pose, goal_pose1)
 
     nav_start = navigator.get_clock().now()
     navigator.followWaypoints(goal_poses)
 
     i = 0
-    while not navigator.isNavComplete():
+    while not navigator.isNavComplete(): #isTaskComplete():
         ################################################
         #
         # Implement some code here for your application!
@@ -414,9 +412,7 @@ def main():
 
             # Some navigation timeout to demo cancellation
             if now - nav_start > Duration(seconds=600.0):
-                navigator.cancelNav()
-
-            
+                navigator.cancelNav() #cancelTask()
 
     # Do something depending on the return code
     result = navigator.getResult()
@@ -434,5 +430,93 @@ def main():
     exit(0)
 
 
+def main():
+    rclpy.init()
+
+    startGoingAround(1)
+
+
+
+
 if __name__ == '__main__':
     main()
+
+
+
+    # goal_poses = []
+    # goal_pose1 = PoseStamped()
+    # goal_pose1.header.frame_id = 'map'
+    # goal_pose1.header.stamp = navigator.get_clock().now().to_msg()
+    # goal_pose1.pose.position.x = 1.5
+    # goal_pose1.pose.position.y = 0.55
+    # goal_pose1.pose.orientation.w = 0.707
+    # goal_pose1.pose.orientation.z = 0.707
+    # goal_poses.append(goal_pose1)
+
+    # # additional goals can be appended
+    # goal_pose2 = PoseStamped()
+    # goal_pose2.header.frame_id = 'map'
+    # goal_pose2.header.stamp = navigator.get_clock().now().to_msg()
+    # goal_pose2.pose.position.x = -1.5
+    # goal_pose2.pose.position.y = -0.55
+    # goal_pose2.pose.orientation.w = 0.707
+    # goal_pose2.pose.orientation.z = 0.707
+    # goal_poses.append(goal_pose2)
+    # goal_pose3 = PoseStamped()
+    # goal_pose3.header.frame_id = 'map'
+    # goal_pose3.header.stamp = navigator.get_clock().now().to_msg()
+    # goal_pose3.pose.position.x = -1.5
+    # goal_pose3.pose.position.y = 0.55
+    # goal_pose3.pose.orientation.w = 0.707
+    # goal_pose3.pose.orientation.z = 0.707
+    # goal_poses.append(goal_pose3)
+
+    # # sanity check a valid path exists
+    # # path = navigator.getPath(initial_pose, goal_pose1)
+
+    # nav_start = navigator.get_clock().now()
+    # navigator.followWaypoints(goal_poses)
+
+    # i = 0
+    # while not navigator.isNavComplete(): #isTaskComplete():
+    #     ################################################
+    #     #
+    #     # Implement some code here for your application!
+    #     #
+    #     ################################################
+
+    #     # Do something with the feedback
+    #     i = i + 1
+    #     feedback = navigator.getFeedback()
+    #     if feedback and i % 5 == 0:
+    #         print('Executing current waypoint: ' +
+    #               str(feedback.current_waypoint + 1) + '/' + str(len(goal_poses)))
+    #         now = navigator.get_clock().now()
+
+    #         # Some navigation timeout to demo cancellation
+    #         if now - nav_start > Duration(seconds=600.0):
+    #             navigator.cancelNav() #cancelTask()
+
+    #         # # Some follow waypoints request change to demo preemption
+    #         # if now - nav_start > Duration(seconds=35.0):
+    #         #     goal_pose4 = PoseStamped()
+    #         #     goal_pose4.header.frame_id = 'map'
+    #         #     goal_pose4.header.stamp = now.to_msg()
+    #         #     goal_pose4.pose.position.x = -5.0
+    #         #     goal_pose4.pose.position.y = -4.75
+    #         #     goal_pose4.pose.orientation.w = 0.707
+    #         #     goal_pose4.pose.orientation.z = 0.707
+    #         #     goal_poses = [goal_pose4]
+    #         #     nav_start = now
+    #         #     navigator.followWaypoints(goal_poses)
+
+    # # Do something depending on the return code
+    # result = navigator.getResult()
+    # if result == NavigationResult.SUCCEEDED:
+    #     print('Goal succeeded!')
+    # elif result == NavigationResult.CANCELED:
+    #     print('Goal was canceled!')
+    # elif result == NavigationResult.FAILED:
+    #     print('Goal failed!')
+    # else:
+    #     print('Goal has an invalid return status!')

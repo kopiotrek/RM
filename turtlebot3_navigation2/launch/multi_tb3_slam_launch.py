@@ -40,9 +40,8 @@ def generate_launch_description():
 
     # Names and poses of the robots
     robots = [
-        {'name': 'robot1', 'x_pose': 0.0, 'y_pose': 0.5, 'z_pose': 0.01},
-        # {'name': 'robot2', 'x_pose': 0.0, 'y_pose': -0.5, 'z_pose': 0.01}
-        ]
+        # {'name': 'robot1', 'x_pose': 0.0, 'y_pose': 0.5, 'z_pose': 0.01},
+        {'name': 'robot1', 'x_pose': 0.0, 'y_pose': -0.5, 'z_pose': 0.01}]
 
     # Simulation settings
     world = LaunchConfiguration('world')
@@ -62,7 +61,6 @@ def generate_launch_description():
     declare_world_cmd = DeclareLaunchArgument(
         'world',
         default_value=os.path.join(bringup_dir, 'worlds', 'world_only.model'),
-        # default_value=os.path.join(local_bringup_dir, 'worlds', 'sala_pwr.model'),
         description='Full path to world file to load')
 
     declare_simulator_cmd = DeclareLaunchArgument(
@@ -72,8 +70,7 @@ def generate_launch_description():
 
     declare_map_yaml_cmd = DeclareLaunchArgument(
         'map',
-        default_value=os.path.join(bringup_dir, 'maps', 'turtlebot3_world.yaml'),
-        # default_value=os.path.join(local_bringup_dir, 'map', 'turtlebot3_world.yaml'),        
+        default_value=os.path.join(local_bringup_dir,'map','sala_pwr.yaml'),
         description='Full path to map file to load')
 
     declare_robot1_params_file_cmd = DeclareLaunchArgument(
@@ -99,7 +96,8 @@ def generate_launch_description():
 
     declare_rviz_config_file_cmd = DeclareLaunchArgument(
         'rviz_config',
-        default_value=os.path.join(bringup_dir, 'rviz', 'nav2_namespaced_view.rviz'),
+        # default_value=os.path.join(bringup_dir, 'rviz', 'nav2_namespaced_view.rviz'),
+        default_value=os.path.join(local_bringup_dir, 'param', 'main.rviz'),
         description='Full path to the RVIZ config file to use.')
 
     declare_use_robot_state_pub_cmd = DeclareLaunchArgument(
@@ -192,24 +190,24 @@ def generate_launch_description():
     ld = LaunchDescription()
 
     # Declare the launch options
-    ld.add_action(declare_simulator_cmd)
-    ld.add_action(declare_world_cmd)
-    ld.add_action(declare_map_yaml_cmd)
-    ld.add_action(declare_robot1_params_file_cmd)
-    ld.add_action(declare_robot2_params_file_cmd)
-    ld.add_action(declare_bt_xml_cmd)
+    # ld.add_action(declare_simulator_cmd)
+    # ld.add_action(declare_world_cmd)
+    # ld.add_action(declare_map_yaml_cmd)
+    # ld.add_action(declare_robot1_params_file_cmd)
+    # ld.add_action(declare_robot2_params_file_cmd)
+    # ld.add_action(declare_bt_xml_cmd)
     ld.add_action(declare_use_rviz_cmd)
-    ld.add_action(declare_autostart_cmd)
+    # ld.add_action(declare_autostart_cmd)
     ld.add_action(declare_rviz_config_file_cmd)
-    ld.add_action(declare_use_robot_state_pub_cmd)
+    # ld.add_action(declare_use_robot_state_pub_cmd)
 
     # Add the actions to start gazebo, robots and simulations
-    ld.add_action(start_gazebo_cmd)
+    # ld.add_action(start_gazebo_cmd)
 
-    for spawn_robot_cmd in spawn_robots_cmds:
-        ld.add_action(spawn_robot_cmd)
+    # for spawn_robot_cmd in spawn_robots_cmds:
+    #     ld.add_action(spawn_robot_cmd)
 
-    # for simulation_instance_cmd in nav_instances_cmds:
-    #     ld.add_action(simulation_instance_cmd)
+    for simulation_instance_cmd in nav_instances_cmds:
+        ld.add_action(simulation_instance_cmd)
 
     return ld
