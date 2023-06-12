@@ -63,7 +63,7 @@ class TurtlebotController(Node):
 
         if self.is_decimal_in_range(self.last_pose[0]) and self.is_decimal_in_range(self.last_pose[1]):
             
-            self.current_sector_id = self.calculate_sector_id(math.floor(self.last_pose[0]), math.floor(self.last_pose[1]))
+            self.current_sector_id = self.calculate_sector_id(math.floor(self.last_pose[0]), - math.floor(self.last_pose[1] + 1))
 
             if self.current_sector_id != self.last_sector_id:
                 sector_id = Int8()
@@ -74,10 +74,10 @@ class TurtlebotController(Node):
             self.get_logger().info(f'sector id: {self.last_sector_id}')
 
     def listener_callback_next_sector(self, robot_pose):
-        self.next_pose[0] = math.floor(robot_pose.pose.position.x)
-        self.next_pose[1] = math.floor(robot_pose.pose.position.y)
+        self.next_pose[0] = robot_pose.pose.position.x
+        self.next_pose[1] = robot_pose.pose.position.y
         self.get_logger().info(f'robot requested pose: {self.next_pose}')
-        sector_id = self.calculate_sector_id(self.next_pose[0], self.next_pose[1])
+        sector_id = self.calculate_sector_id(math.floor(self.next_pose[0]), - math.floor(self.next_pose[1] + 1))
         if sector_id != self.last_requested_sector_id:
             self.send_goal(sector_id)
             self.last_requested_sector_id = sector_id
