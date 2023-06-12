@@ -332,7 +332,7 @@ class BasicNavigator(Node):
         self.get_logger().debug(msg)
         return
 
-def startGoingAround(robot_id):
+def startGoingAround():
 
     navigator = BasicNavigator()
 
@@ -350,80 +350,83 @@ def startGoingAround(robot_id):
     # navigator.clearAllCostmaps()  # also have clearLocalCostmap() and clearGlobalCostmap()
     # global_costmap = navigator.getGlobalCostmap()
     # local_costmap = navigator.getLocalCostmap()
+    while True:
+        # set our demo's goal poses to follow
+        goal_poses = []
+        goal_pose1 = PoseStamped()
+        goal_pose1.header.frame_id = 'map'
+        goal_pose1.header.stamp = navigator.get_clock().now().to_msg()
+        goal_pose1.pose.position.x = -0.5
+        goal_pose1.pose.position.y = -0.5
+        goal_pose1.pose.orientation.w = 0.9238795
+        goal_pose1.pose.orientation.z = 0.3826834
+        goal_poses.append(goal_pose1)
 
-    # set our demo's goal poses to follow
-    goal_poses = []
-    goal_pose1 = PoseStamped()
-    goal_pose1.header.frame_id = 'map'
-    goal_pose1.header.stamp = navigator.get_clock().now().to_msg()
-    goal_pose1.pose.position.x = -0.5
-    goal_pose1.pose.position.y = -0.5
-    goal_pose1.pose.orientation.w = 0.9238795
-    goal_pose1.pose.orientation.z = 0.3826834
-    goal_poses.append(goal_pose1)
+        # additional goals can be appended
+        goal_pose2 = PoseStamped()
+        goal_pose2.header.frame_id = 'map'
+        goal_pose2.header.stamp = navigator.get_clock().now().to_msg()
+        goal_pose2.pose.position.x = -0.5
+        goal_pose2.pose.position.y = 0.5
+        goal_pose2.pose.orientation.w = 0.3826834
+        goal_pose2.pose.orientation.z = 0.9238795
+        goal_poses.append(goal_pose2)
+        goal_pose3 = PoseStamped()
+        goal_pose3.header.frame_id = 'map'
+        goal_pose3.header.stamp = navigator.get_clock().now().to_msg()
+        goal_pose3.pose.position.x = -1.5
+        goal_pose3.pose.position.y = 0.5
+        goal_pose3.pose.orientation.w = -0.3826834
+        goal_pose3.pose.orientation.z = 0.9238795
+        goal_poses.append(goal_pose3)
+        goal_pose4 = PoseStamped()
+        goal_pose4.header.frame_id = 'map'
+        goal_pose4.header.stamp = navigator.get_clock().now().to_msg()
+        goal_pose4.pose.position.x = -1.5
+        goal_pose4.pose.position.y = -0.5
+        goal_pose4.pose.orientation.w = -0.9238795
+        goal_pose4.pose.orientation.z = 0.3826834
+        goal_poses.append(goal_pose4)
 
-    # additional goals can be appended
-    goal_pose2 = PoseStamped()
-    goal_pose2.header.frame_id = 'map'
-    goal_pose2.header.stamp = navigator.get_clock().now().to_msg()
-    goal_pose2.pose.position.x = -0.5
-    goal_pose2.pose.position.y = 0.5
-    goal_pose2.pose.orientation.w = 0.3826834
-    goal_pose2.pose.orientation.z = 0.9238795
-    goal_poses.append(goal_pose2)
-    goal_pose3 = PoseStamped()
-    goal_pose3.header.frame_id = 'map'
-    goal_pose3.header.stamp = navigator.get_clock().now().to_msg()
-    goal_pose3.pose.position.x = -1.5
-    goal_pose3.pose.position.y = 0.5
-    goal_pose3.pose.orientation.w = -0.3826834
-    goal_pose3.pose.orientation.z = 0.9238795
-    goal_poses.append(goal_pose3)
-    goal_pose4 = PoseStamped()
-    goal_pose4.header.frame_id = 'map'
-    goal_pose4.header.stamp = navigator.get_clock().now().to_msg()
-    goal_pose4.pose.position.x = -1.5
-    goal_pose4.pose.position.y = -0.5
-    goal_pose4.pose.orientation.w = 0.3826834
-    goal_pose4.pose.orientation.z = -0.9238795
-    goal_poses.append(goal_pose4)
+        # sanity check a valid path exists
+        # path = navigator.getPath(initial_pose, goal_pose1)
 
-    # sanity check a valid path exists
-    # path = navigator.getPath(initial_pose, goal_pose1)
+        nav_start = navigator.get_clock().now()
+        navigator.followWaypoints(goal_poses)
 
-    nav_start = navigator.get_clock().now()
-    navigator.followWaypoints(goal_poses)
+        i = 0
+        while not navigator.isNavComplete(): #isTaskComplete():
+            ################################################
+            #
+            # Implement some code here for your application!
+            #
+            ################################################
 
-    i = 0
-    while not navigator.isNavComplete(): #isTaskComplete():
-        ################################################
-        #
-        # Implement some code here for your application!
-        #
-        ################################################
+            # Do something with the feedback
+            i = i + 1
+            feedback = navigator.getFeedback()
+            if feedback and i % 5 == 0:
+                print('Executing current waypoint: ' +
+                      str(feedback.current_waypoint + 1) + '/' + str(len(goal_poses)))
+                now = navigator.get_clock().now()
 
-        # Do something with the feedback
-        i = i + 1
-        feedback = navigator.getFeedback()
-        if feedback and i % 5 == 0:
-            print('Executing current waypoint: ' +
-                  str(feedback.current_waypoint + 1) + '/' + str(len(goal_poses)))
-            now = navigator.get_clock().now()
+                # Some navigation timeout to demo cancellation
+                if now - nav_start > Duration(seconds=600.0):
+                    navigator.cancelNav() #cancelTask()
 
-            # Some navigation timeout to demo cancellation
-            if now - nav_start > Duration(seconds=600.0):
-                navigator.cancelNav() #cancelTask()
-
-    # Do something depending on the return code
-    result = navigator.getResult()
-    if result == NavigationResult.SUCCEEDED:
-        print('Goal succeeded!')
-    elif result == NavigationResult.CANCELED:
-        print('Goal was canceled!')
-    elif result == NavigationResult.FAILED:
-        print('Goal failed!')
-    else:
-        print('Goal has an invalid return status!')
+        # Do something depending on the return code
+        result = navigator.getResult()
+        if result == NavigationResult.SUCCEEDED:
+            print('Goal succeeded!')
+        elif result == NavigationResult.CANCELED:
+            print('Goal was canceled!')
+            break
+        elif result == NavigationResult.FAILED:
+            print('Goal failed!')
+            break
+        else:
+            print('Goal has an invalid return status!')
+            break
 
     navigator.lifecycleShutdown()
 
@@ -432,8 +435,7 @@ def startGoingAround(robot_id):
 
 def main():
     rclpy.init()
-
-    startGoingAround(1)
+    startGoingAround()
 
 
 
