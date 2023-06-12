@@ -72,6 +72,9 @@ class BasicNavigator(Node):
         self.initial_pose_pub = self.create_publisher(PoseWithCovarianceStamped,
                                                       self.namespace + 'initialpose',
                                                       10)
+        self.current_goal_pub = self.create_publisher(PoseStamped,
+                                                      self.namespace + 'current_goal',
+                                                      10)
         self.change_maps_srv = self.create_client(
             LoadMap, '/map_server/load_map')
         self.clear_costmap_global_srv = self.create_client(
@@ -351,41 +354,73 @@ def startGoingAround():
     # global_costmap = navigator.getGlobalCostmap()
     # local_costmap = navigator.getLocalCostmap()
     while True:
+        
         # set our demo's goal poses to follow
         goal_poses = []
         goal_pose1 = PoseStamped()
+        goal_pose2 = PoseStamped()
+        goal_pose3 = PoseStamped()
+        goal_pose4 = PoseStamped()
+        if navigator.namespace == '/robot2/':
+            goal_pose1.pose.position.x = -0.5
+            goal_pose1.pose.position.y = -0.5
+            goal_pose1.pose.orientation.w = 0.9238795
+            goal_pose1.pose.orientation.z = 0.3826834
+
+            goal_pose2.pose.position.x = -0.5
+            goal_pose2.pose.position.y = 0.5
+            goal_pose2.pose.orientation.w = 0.3826834
+            goal_pose2.pose.orientation.z = 0.9238795
+
+            goal_pose3.pose.position.x = -1.5
+            goal_pose3.pose.position.y = 0.5
+            goal_pose3.pose.orientation.w = -0.3826834
+            goal_pose3.pose.orientation.z = 0.9238795
+
+            goal_pose4.pose.position.x = -1.5
+            goal_pose4.pose.position.y = -0.5
+            goal_pose4.pose.orientation.w = -0.9238795
+            goal_pose4.pose.orientation.z = 0.3826834
+
+        elif navigator.namespace == '/robot1/':
+            goal_pose1.pose.position.x = 0.5
+            goal_pose1.pose.position.y = -1.5
+            goal_pose1.pose.orientation.w = 0.9238795
+            goal_pose1.pose.orientation.z = 0.3826834
+
+            goal_pose2.pose.position.x = 0.5
+            goal_pose2.pose.position.y = -0.5
+            goal_pose2.pose.orientation.w = 0.3826834
+            goal_pose2.pose.orientation.z = 0.9238795
+
+            goal_pose3.pose.position.x = -0.5
+            goal_pose3.pose.position.y = -0.5
+            goal_pose3.pose.orientation.w = -0.3826834
+            goal_pose3.pose.orientation.z = 0.9238795
+
+            goal_pose4.pose.position.x = -0.5
+            goal_pose4.pose.position.y = -1.5
+            goal_pose4.pose.orientation.w = -0.9238795
+            goal_pose4.pose.orientation.z = 0.3826834
+
+
         goal_pose1.header.frame_id = 'map'
         goal_pose1.header.stamp = navigator.get_clock().now().to_msg()
-        goal_pose1.pose.position.x = -0.5
-        goal_pose1.pose.position.y = -0.5
-        goal_pose1.pose.orientation.w = 0.9238795
-        goal_pose1.pose.orientation.z = 0.3826834
+        
         goal_poses.append(goal_pose1)
 
         # additional goals can be appended
-        goal_pose2 = PoseStamped()
         goal_pose2.header.frame_id = 'map'
         goal_pose2.header.stamp = navigator.get_clock().now().to_msg()
-        goal_pose2.pose.position.x = -0.5
-        goal_pose2.pose.position.y = 0.5
-        goal_pose2.pose.orientation.w = 0.3826834
-        goal_pose2.pose.orientation.z = 0.9238795
+
         goal_poses.append(goal_pose2)
-        goal_pose3 = PoseStamped()
         goal_pose3.header.frame_id = 'map'
         goal_pose3.header.stamp = navigator.get_clock().now().to_msg()
-        goal_pose3.pose.position.x = -1.5
-        goal_pose3.pose.position.y = 0.5
-        goal_pose3.pose.orientation.w = -0.3826834
-        goal_pose3.pose.orientation.z = 0.9238795
+
         goal_poses.append(goal_pose3)
-        goal_pose4 = PoseStamped()
         goal_pose4.header.frame_id = 'map'
         goal_pose4.header.stamp = navigator.get_clock().now().to_msg()
-        goal_pose4.pose.position.x = -1.5
-        goal_pose4.pose.position.y = -0.5
-        goal_pose4.pose.orientation.w = -0.9238795
-        goal_pose4.pose.orientation.z = 0.3826834
+
         goal_poses.append(goal_pose4)
 
         # sanity check a valid path exists
@@ -409,6 +444,7 @@ def startGoingAround():
                 print('Executing current waypoint: ' +
                       str(feedback.current_waypoint + 1) + '/' + str(len(goal_poses)))
                 now = navigator.get_clock().now()
+                navigator.current_goal_pub.publish(goal_poses[feedback.current_waypoint])
 
                 # Some navigation timeout to demo cancellation
                 if now - nav_start > Duration(seconds=600.0):
