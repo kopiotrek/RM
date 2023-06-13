@@ -14,6 +14,13 @@
 #
 # Author: Darby Lim
 
+#INSTRUCTIONS:
+# 1. colcon build
+# 2. source install/setup.bash
+# 3. ros2 launch slam_toolbox online_async_launch.py 
+# 4. ros2 launch turtlebot3_navigation2 navigation2.launch.py 
+# 5. ros2 launch turtlebot3_explorer turtlebot3_explorer.launch.py 
+
 import os
 
 from ament_index_python.packages import get_package_share_directory
