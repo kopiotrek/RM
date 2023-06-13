@@ -50,12 +50,13 @@ def generate_launch_description():
         #     'map',
         #     'turtlebot3_world.yaml'))
 
-    param_file_name = TURTLEBOT3_MODEL + '.yaml'
+    # param_file_name = TURTLEBOT3_MODEL + '.yaml'
+    param_file_name = 'waffle_2.yaml'
     param_dir = LaunchConfiguration(
         'params_file',
         default=os.path.join(
             get_package_share_directory('turtlebot3_navigation2'),
-            'param',
+            'nav2_param',
             param_file_name))
 
     nav2_launch_file_dir = os.path.join(get_package_share_directory('nav2_bringup'), 'launch')

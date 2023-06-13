@@ -13,7 +13,7 @@ find_package(ament_cmake REQUIRED)
 # Install
 ################################################################################
 install(
-  DIRECTORY launch map param rviz worlds    
+  DIRECTORY launch map  rviz worlds nav2_param 
   DESTINATION share/${PROJECT_NAME}
 )
 
