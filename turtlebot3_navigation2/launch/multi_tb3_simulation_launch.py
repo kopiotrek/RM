@@ -67,7 +67,7 @@ def generate_launch_description():
 
     declare_simulator_cmd = DeclareLaunchArgument(
         'simulator',
-        default_value='gazebo',
+        default_value='gzserver',
         description='The simulator to use (gazebo or gzserver)')
 
     declare_map_yaml_cmd = DeclareLaunchArgument(
@@ -133,60 +133,62 @@ def generate_launch_description():
                                   }.items()))
 
     # Define commands for launching the navigation instances
-    nav_instances_cmds = []
-    for robot in robots:
-        params_file = LaunchConfiguration(robot['name'] + '_params_file')
+    # nav_instances_cmds = []
+    # for robot in robots:
+    #     params_file = LaunchConfiguration(robot['name'] + '_params_file')
 
-        group = GroupAction([
-            IncludeLaunchDescription(
-                PythonLaunchDescriptionSource(
-                        os.path.join(launch_dir, 'rviz_launch.py')),
-                condition=IfCondition(use_rviz),
-                launch_arguments={
-                                  'namespace': TextSubstitution(text=robot['name']),
-                                  'use_namespace': 'True',
-                                  'rviz_config': rviz_config_file}.items()),
+    #     group = GroupAction([
+    #         IncludeLaunchDescription(
+    #             PythonLaunchDescriptionSource(
+    #                     os.path.join(launch_dir, 'rviz_launch.py')),
+    #             condition=IfCondition(use_rviz),
+    #             launch_arguments={
+    #                               'namespace': TextSubstitution(text=robot['name']),
+    #                               'use_namespace': 'True',
+    #                               'rviz_config': rviz_config_file}.items()),
 
-            IncludeLaunchDescription(
-                PythonLaunchDescriptionSource(os.path.join(bringup_dir,
-                                                           'launch',
-                                                           'tb3_simulation_launch.py')),
-                launch_arguments={'namespace': robot['name'],
-                                  'use_namespace': 'True',
-                                  'map': map_yaml_file,
-                                  'use_sim_time': 'True',
-                                  'params_file': params_file,
-                                  'default_bt_xml_filename': default_bt_xml_filename,
-                                  'autostart': autostart,
-                                  'use_rviz': 'False',
-                                  'use_simulator': 'False',
-                                  'headless': 'False',
-                                  'use_robot_state_pub': use_robot_state_pub}.items()),
+    #         IncludeLaunchDescription(
+    #             PythonLaunchDescriptionSource(os.path.join(bringup_dir,
+    #                                                        'launch',
+    #                                                        'tb3_simulation_launch.py')),
+    #             launch_arguments={
+                                #   'namespace': robot['name'],
+                                #   'use_namespace': 'True',
+                                #   'map': map_yaml_file,
+                                #   'use_sim_time': 'True',
+                                #   'params_file': params_file,
+                                #   'default_bt_xml_filename': default_bt_xml_filename,
+                                #   'autostart': autostart,
+                                #   'use_rviz': 'False',
+                                #   'use_simulator': 'False',
+                                #   'headless': 'False',
+                                #   'use_robot_state_pub': use_robot_state_pub
+        #                           }.items()),
 
-            LogInfo(
-                condition=IfCondition(log_settings),
-                msg=['Launching ', robot['name']]),
-            LogInfo(
-                condition=IfCondition(log_settings),
-                msg=[robot['name'], ' map yaml: ', map_yaml_file]),
-            LogInfo(
-                condition=IfCondition(log_settings),
-                msg=[robot['name'], ' params yaml: ', params_file]),
-            LogInfo(
-                condition=IfCondition(log_settings),
-                msg=[robot['name'], ' behavior tree xml: ', default_bt_xml_filename]),
-            LogInfo(
-                condition=IfCondition(log_settings),
-                msg=[robot['name'], ' rviz config file: ', rviz_config_file]),
-            LogInfo(
-                condition=IfCondition(log_settings),
-                msg=[robot['name'], ' using robot state pub: ', use_robot_state_pub]),
-            LogInfo(
-                condition=IfCondition(log_settings),
-                msg=[robot['name'], ' autostart: ', autostart])
-        ])
+        #     LogInfo(
+        #         condition=IfCondition(log_settings),
+        #         msg=['Launching ', robot['name']]),
+        #     LogInfo(
+        #         condition=IfCondition(log_settings),
+        #         msg=[robot['name'], ' map yaml: ', map_yaml_file]),
+        #     LogInfo(
+        #         condition=IfCondition(log_settings),
+        #         msg=[robot['name'], ' params yaml: ', params_file]),
+        #     LogInfo(
+        #         condition=IfCondition(log_settings),
+        #         msg=[robot['name'], ' behavior tree xml: ', default_bt_xml_filename]),
+        #     LogInfo(
+        #         condition=IfCondition(log_settings),
+        #         msg=[robot['name'], ' rviz config file: ', rviz_config_file]),
+        #     LogInfo(
+        #         condition=IfCondition(log_settings),
+        #         msg=[robot['name'], ' using robot state pub: ', use_robot_state_pub]),
+        #     LogInfo(
+        #         condition=IfCondition(log_settings),
+        #         msg=[robot['name'], ' autostart: ', autostart])
+        # ])
 
-        nav_instances_cmds.append(group)
+        # nav_instances_cmds.append(group)
 
     # Create the launch description and populate
     ld = LaunchDescription()
