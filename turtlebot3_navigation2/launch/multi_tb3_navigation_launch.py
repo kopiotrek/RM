@@ -76,12 +76,12 @@ def generate_launch_description():
 
     declare_robot1_params_file_cmd = DeclareLaunchArgument(
         'robot1_params_file',
-        default_value=os.path.join(bringup_dir, 'params', 'nav2_multirobot_params_1.yaml'),
+        default_value=os.path.join(local_bringup_dir, 'param', 'nav2_multirobot_params_1.yaml'),
         description='Full path to the ROS2 parameters file to use for robot1 launched nodes')
 
     declare_robot2_params_file_cmd = DeclareLaunchArgument(
         'robot2_params_file',
-        default_value=os.path.join(bringup_dir, 'params', 'nav2_multirobot_params_2.yaml'),
+        default_value=os.path.join(local_bringup_dir, 'param', 'nav2_multirobot_params_2.yaml'),
         description='Full path to the ROS2 parameters file to use for robot2 launched nodes')
 
     declare_bt_xml_cmd = DeclareLaunchArgument(
