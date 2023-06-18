@@ -83,7 +83,7 @@ class TurtlebotController(Node):
         twist = Twist()
         twist.linear.x = 0.0
         self.publisher_stop_robot.publish(twist)
-        self.get_logger().info('Stopping...')
+        self.get_logger().info(f'{self.namespace} stopping...')
 
     def listener_callback_pose(self, robot_pose):
         self.last_pose[0] = robot_pose.pose.pose.position.x

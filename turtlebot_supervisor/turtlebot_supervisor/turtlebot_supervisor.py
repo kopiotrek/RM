@@ -30,8 +30,8 @@ class TurtleBotSupervisor(Node):
 
     def _declare_default_parameters(self):
         self.declare_parameter('grid_frame_id', 'map')
-        self.declare_parameter('size_x', 10)
-        self.declare_parameter('size_y', 10)
+        self.declare_parameter('size_x', 4)
+        self.declare_parameter('size_y', 4)
         self.declare_parameter('resolution', 1.0)
 
     def _create_map(self):

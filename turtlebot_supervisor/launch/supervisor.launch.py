@@ -7,10 +7,10 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 
 
 def generate_launch_description():
-    size_x_arg = DeclareLaunchArgument('size_x', default_value='10',
+    size_x_arg = DeclareLaunchArgument('size_x', default_value='4',
                                        description='Map x size')
 
-    size_y_arg = DeclareLaunchArgument('size_y', default_value='10',
+    size_y_arg = DeclareLaunchArgument('size_y', default_value='4',
                                        description='Map y size')
 
     namespace_1_arg = DeclareLaunchArgument('namespace1', default_value='/robot1',
