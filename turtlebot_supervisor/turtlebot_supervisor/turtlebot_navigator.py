@@ -361,67 +361,161 @@ def startGoingAround():
         goal_pose2 = PoseStamped()
         goal_pose3 = PoseStamped()
         goal_pose4 = PoseStamped()
-        if navigator.namespace == '/robot2/':
-            goal_pose1.pose.position.x = -0.5
-            goal_pose1.pose.position.y = -0.5
-            goal_pose1.pose.orientation.w = 0.9238795
-            goal_pose1.pose.orientation.z = 0.3826834
+        goal_pose5 = PoseStamped()
+        goal_pose6 = PoseStamped()
+        goal_pose7 = PoseStamped()
+        goal_pose8 = PoseStamped()
+        # if navigator.namespace == '/robot2/':
+        #     goal_pose1.pose.position.x = -0.5
+        #     goal_pose1.pose.position.y = -0.5
+        #     goal_pose1.pose.orientation.w = 0.9238795
+        #     goal_pose1.pose.orientation.z = 0.3826834
 
-            goal_pose2.pose.position.x = -0.5
-            goal_pose2.pose.position.y = 0.5
-            goal_pose2.pose.orientation.w = 0.3826834
-            goal_pose2.pose.orientation.z = 0.9238795
+        #     goal_pose2.pose.position.x = -0.5
+        #     goal_pose2.pose.position.y = 0.5
+        #     goal_pose2.pose.orientation.w = 0.3826834
+        #     goal_pose2.pose.orientation.z = 0.9238795
 
-            goal_pose3.pose.position.x = -1.5
-            goal_pose3.pose.position.y = 0.5
-            goal_pose3.pose.orientation.w = -0.3826834
-            goal_pose3.pose.orientation.z = 0.9238795
+        #     goal_pose3.pose.position.x = -1.5
+        #     goal_pose3.pose.position.y = 0.5
+        #     goal_pose3.pose.orientation.w = -0.3826834
+        #     goal_pose3.pose.orientation.z = 0.9238795
 
-            goal_pose4.pose.position.x = -1.5
-            goal_pose4.pose.position.y = -0.5
-            goal_pose4.pose.orientation.w = -0.9238795
-            goal_pose4.pose.orientation.z = 0.3826834
+        #     goal_pose4.pose.position.x = -1.5
+        #     goal_pose4.pose.position.y = -0.5
+        #     goal_pose4.pose.orientation.w = -0.9238795
+        #     goal_pose4.pose.orientation.z = 0.3826834
 
-        elif navigator.namespace == '/robot1/':
+        # elif navigator.namespace == '/robot1/':
+        #     goal_pose1.pose.position.x = 0.5
+        #     goal_pose1.pose.position.y = -1.5
+        #     goal_pose1.pose.orientation.w = 0.9238795
+        #     goal_pose1.pose.orientation.z = 0.3826834
+
+        #     goal_pose2.pose.position.x = 0.5
+        #     goal_pose2.pose.position.y = -0.5
+        #     goal_pose2.pose.orientation.w = 0.3826834
+        #     goal_pose2.pose.orientation.z = 0.9238795
+
+        #     goal_pose3.pose.position.x = -0.5
+        #     goal_pose3.pose.position.y = -0.5
+        #     goal_pose3.pose.orientation.w = -0.3826834
+        #     goal_pose3.pose.orientation.z = 0.9238795
+
+        #     goal_pose4.pose.position.x = -0.5
+        #     goal_pose4.pose.position.y = -1.5
+        #     goal_pose4.pose.orientation.w = -0.9238795
+        #     goal_pose4.pose.orientation.z = 0.3826834
+
+        if navigator.namespace == '/robot1/':
             goal_pose1.pose.position.x = 0.5
-            goal_pose1.pose.position.y = -1.5
-            goal_pose1.pose.orientation.w = 0.9238795
-            goal_pose1.pose.orientation.z = 0.3826834
+            goal_pose1.pose.position.y = 0.5
+            goal_pose1.pose.orientation.w = 0.7071068
+            goal_pose1.pose.orientation.z = 0.7071068
+
+            goal_pose2.pose.position.x = -0.5 #180
+            goal_pose2.pose.position.y = 0.5
+            goal_pose2.pose.orientation.w = 0.0
+            goal_pose2.pose.orientation.z = 1.0
+
+            goal_pose3.pose.position.x = -0.5 #90
+            goal_pose3.pose.position.y = 1.5
+            goal_pose3.pose.orientation.w = 0.7071068
+            goal_pose3.pose.orientation.z = 0.7071068
+
+            goal_pose4.pose.position.x = 0.5 #0
+            goal_pose4.pose.position.y = 1.5
+            goal_pose4.pose.orientation.w = 1.0
+            goal_pose4.pose.orientation.z = 0.0
+
+            goal_pose5.pose.position.x = 1.5 #0
+            goal_pose5.pose.position.y = 1.5
+            goal_pose5.pose.orientation.w = 1.0
+            goal_pose5.pose.orientation.z = 0.0
+
+            goal_pose6.pose.position.x = 1.5 #270
+            goal_pose6.pose.position.y = 0.5
+            goal_pose6.pose.orientation.w = -0.7071068
+            goal_pose6.pose.orientation.z = 0.7071068
+
+            goal_pose7.pose.position.x = 1.5
+            goal_pose7.pose.position.y = -0.5
+            goal_pose7.pose.orientation.w = -0.7071068
+            goal_pose7.pose.orientation.z = 0.7071068
+
+            goal_pose8.pose.position.x = 0.5
+            goal_pose8.pose.position.y = -0.5
+            goal_pose8.pose.orientation.w = 0.0
+            goal_pose8.pose.orientation.z = 1.0
+
+            goal_pose1.header.frame_id = 'map'
+            goal_pose1.header.stamp = navigator.get_clock().now().to_msg()
+            goal_poses.append(goal_pose1)
+            goal_pose2.header.frame_id = 'map'
+            goal_pose2.header.stamp = navigator.get_clock().now().to_msg()
+            goal_poses.append(goal_pose2)
+            goal_pose3.header.frame_id = 'map'
+            goal_pose3.header.stamp = navigator.get_clock().now().to_msg()
+            goal_poses.append(goal_pose3)
+            goal_pose4.header.frame_id = 'map'
+            goal_pose4.header.stamp = navigator.get_clock().now().to_msg()
+            goal_poses.append(goal_pose4)
+            goal_pose5.header.frame_id = 'map'
+            goal_pose5.header.stamp = navigator.get_clock().now().to_msg()
+            goal_poses.append(goal_pose5)
+            goal_pose6.header.frame_id = 'map'
+            goal_pose6.header.stamp = navigator.get_clock().now().to_msg()
+            goal_poses.append(goal_pose6)
+            goal_pose7.header.frame_id = 'map'
+            goal_pose7.header.stamp = navigator.get_clock().now().to_msg()
+            goal_poses.append(goal_pose7)
+            goal_pose8.header.frame_id = 'map'
+            goal_pose8.header.stamp = navigator.get_clock().now().to_msg()
+            goal_poses.append(goal_pose8)
+
+            
+
+        elif navigator.namespace == '/robot2/':
+            goal_pose1.pose.position.x = 0.5 #90
+            goal_pose1.pose.position.y = -0.5
+            goal_pose1.pose.orientation.w = 1.0
+            goal_pose1.pose.orientation.z = 0.0
 
             goal_pose2.pose.position.x = 0.5
-            goal_pose2.pose.position.y = -0.5
-            goal_pose2.pose.orientation.w = 0.3826834
-            goal_pose2.pose.orientation.z = 0.9238795
+            goal_pose2.pose.position.y = 0.5
+            goal_pose2.pose.orientation.w = 0.7071068
+            goal_pose2.pose.orientation.z = 0.7071068
 
             goal_pose3.pose.position.x = -0.5
-            goal_pose3.pose.position.y = -0.5
-            goal_pose3.pose.orientation.w = -0.3826834
-            goal_pose3.pose.orientation.z = 0.9238795
+            goal_pose3.pose.position.y = 0.5
+            goal_pose3.pose.orientation.w = 0.0
+            goal_pose3.pose.orientation.z =1.0
 
             goal_pose4.pose.position.x = -0.5
-            goal_pose4.pose.position.y = -1.5
-            goal_pose4.pose.orientation.w = -0.9238795
-            goal_pose4.pose.orientation.z = 0.3826834
+            goal_pose4.pose.position.y = -0.5
+            goal_pose4.pose.orientation.w = -0.7071068
+            goal_pose4.pose.orientation.z =  0.7071068
+
+            goal_pose1.header.frame_id = 'map'
+            goal_pose1.header.stamp = navigator.get_clock().now().to_msg()
+
+            goal_poses.append(goal_pose1)
+
+            # additional goals can be appended
+            goal_pose2.header.frame_id = 'map'
+            goal_pose2.header.stamp = navigator.get_clock().now().to_msg()
+
+            goal_poses.append(goal_pose2)
+            goal_pose3.header.frame_id = 'map'
+            goal_pose3.header.stamp = navigator.get_clock().now().to_msg()
+
+            goal_poses.append(goal_pose3)
+            goal_pose4.header.frame_id = 'map'
+            goal_pose4.header.stamp = navigator.get_clock().now().to_msg()
+
+            goal_poses.append(goal_pose4)
 
 
-        goal_pose1.header.frame_id = 'map'
-        goal_pose1.header.stamp = navigator.get_clock().now().to_msg()
-        
-        goal_poses.append(goal_pose1)
-
-        # additional goals can be appended
-        goal_pose2.header.frame_id = 'map'
-        goal_pose2.header.stamp = navigator.get_clock().now().to_msg()
-
-        goal_poses.append(goal_pose2)
-        goal_pose3.header.frame_id = 'map'
-        goal_pose3.header.stamp = navigator.get_clock().now().to_msg()
-
-        goal_poses.append(goal_pose3)
-        goal_pose4.header.frame_id = 'map'
-        goal_pose4.header.stamp = navigator.get_clock().now().to_msg()
-
-        goal_poses.append(goal_pose4)
 
         # sanity check a valid path exists
         # path = navigator.getPath(initial_pose, goal_pose1)
