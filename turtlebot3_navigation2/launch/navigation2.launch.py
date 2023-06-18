@@ -39,8 +39,9 @@ def generate_launch_description():
 
     rst_launch_file_dir = os.path.join(get_package_share_directory('turtlebot3_bringup'), 'launch')
     pkg_gazebo_ros = get_package_share_directory('gazebo_ros')
-    world_file_name = 'turtlebot3_worlds/' + TURTLEBOT3_MODEL + '.model'
-    world_file_name = 'turtlebot3_houses/waffle.model'
+    # world_file_name = 'turtlebot3_worlds/' + TURTLEBOT3_MODEL + '.model'
+    # world_file_name = 'turtlebot3_houses/waffle.model'
+    world_file_name = 'turtlebot3_dqn_stage2/waffle.model'
     world = os.path.join(get_package_share_directory('turtlebot3_gazebo'),
                          'worlds', world_file_name)
 
@@ -49,7 +50,7 @@ def generate_launch_description():
         default=os.path.join(
             get_package_share_directory('turtlebot3_navigation2'),
             'map',
-            'turtlebot3_house.yaml'))
+            'turtlebot3_dqn_stage2.yaml'))
     # map_dir = LaunchConfiguration(
         # 'map',
         # default=os.path.join(

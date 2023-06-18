@@ -61,8 +61,8 @@ def generate_launch_description():
     # Declare the launch arguments
     declare_world_cmd = DeclareLaunchArgument(
         'world',
-        default_value=os.path.join(bringup_dir, 'worlds', 'world_only.model'),
-        # default_value=os.path.join(local_bringup_dir, 'worlds', 'sala_pwr.model'),
+        # default_value=os.path.join(bringup_dir, 'worlds', 'world_only.model'),
+        default_value=os.path.join(local_bringup_dir, 'worlds/turtlebot3_dqn_stage2/', 'waffle.model'),
         description='Full path to world file to load')
 
     declare_simulator_cmd = DeclareLaunchArgument(
@@ -72,8 +72,8 @@ def generate_launch_description():
 
     declare_map_yaml_cmd = DeclareLaunchArgument(
         'map',
-        default_value=os.path.join(bringup_dir, 'maps', 'turtlebot3_world.yaml'),
-        # default_value=os.path.join(local_bringup_dir, 'map', 'turtlebot3_world.yaml'),        
+        # default_value=os.path.join(bringup_dir, 'maps', 'turtlebot3_world.yaml'),
+        default_value=os.path.join(local_bringup_dir, 'map', 'turtlebot3_dqn_stage2.yaml'),        
         description='Full path to map file to load')
 
     declare_robot1_params_file_cmd = DeclareLaunchArgument(

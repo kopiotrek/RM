@@ -71,7 +71,8 @@ def generate_launch_description():
 
     declare_map_yaml_cmd = DeclareLaunchArgument(
         'map',
-        default_value=os.path.join(local_bringup_dir,'map','turtlebot3_world.yaml'),
+        # default_value=os.path.join(local_bringup_dir,'map','turtlebot3_world.yaml'),
+        default_value=os.path.join(local_bringup_dir,'map','turtlebot3_dqn_stage2.yaml'),
         description='Full path to map file to load')
 
     declare_robot1_params_file_cmd = DeclareLaunchArgument(
