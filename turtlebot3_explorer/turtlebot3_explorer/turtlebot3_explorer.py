@@ -21,10 +21,10 @@ class Explorer(Node):
             10
         )
         self.unknown_threshold = 0  # Customize the threshold to determine unknown areas
-        self.radius = 15  # radius around the frontier point to calculate information gain
+        self.radius = 5  # radius around the frontier point to calculate information gain
         self.obstacle_treshold = 80  # Threshold for considering a cell as an obstacle
         self.best_goal = PoseStamped()
-        self.last_goal = PoseStamped()
+        self.previous_goals = []
         self.initialized = False
         self.costmap_iniatilized = False
         self.costmap_origin = Pose()
@@ -77,7 +77,7 @@ class Explorer(Node):
                         frontier_points.append((x, y))
 
         self.get_logger().info(f"Frontier points count: {len(frontier_points)}")
-        if len(frontier_points) < 100:
+        if len(frontier_points) < 69:
             self.get_logger().info("----Mapping finished----")
             raise SystemExit
 
@@ -103,22 +103,41 @@ class Explorer(Node):
 
     def evaluate_frontier_points(self, grid, frontier_points):
         best_information_gain = float('-inf')
-
+        goal_tmp = PoseStamped()
+        goal_repeated = False
+        past_froint = [0,0]
         for frontier_point in frontier_points:
-            x, y = frontier_point
-            self.goal_grid = [x,y]
+            if frontier_point is not past_froint:
+                x, y = frontier_point
+                # self.goal_grid = [x,y]
 
 
-            # Compute the information gain for the current frontier point
-            information_gain = self.compute_information_gain(grid, x, y)
+                # Compute the information gain for the current frontier point
+                information_gain = self.compute_information_gain(grid, x, y)
+                
+                if information_gain > best_information_gain:
+                    goal_tmp.pose.position.x = x * self.resolution + self.costmap_origin.position.x
+                    goal_tmp.pose.position.y = y * self.resolution + self.costmap_origin.position.y     
+                    # goal_tmp.pose.position.x = 1.0
+                    # goal_tmp.pose.position.y = 2.0
+                    for goal in self.previous_goals:
+                        if math.isclose(goal.pose.position.x, goal_tmp.pose.position.x, abs_tol = 0.1):
+                            if math.isclose(goal.pose.position.y, goal_tmp.pose.position.y, abs_tol = 0.1):
+                                goal_repeated = True
+                                self.get_logger().info("Repeated goal aborted")
+                            
+                    if goal_repeated is False:
+                        best_information_gain = information_gain                  
+                        self.previous_goals.append(self.best_goal)
+                        self.best_goal.pose.position.x = goal_tmp.pose.position.x
+                        self.best_goal.pose.position.y = goal_tmp.pose.position.y
+                    
+                    goal_repeated = False
+                    past_froint = frontier_point
+            else:
+                self.get_logger().warn("to_nie_chuj")
 
-            if information_gain > best_information_gain:
-                self.best_goal.pose.position.x = x * self.resolution + self.costmap_origin.position.x
-                self.best_goal.pose.position.y = y * self.resolution + self.costmap_origin.position.y
-                if self.best_goal is not self.last_goal:
-                    self.last_goal = self.best_goal
-                    best_information_gain = information_gain
-        
+
         if best_information_gain is float('-inf'):
             self.get_logger().warn("Best information gain is -inf!")
 
@@ -160,7 +179,7 @@ class Explorer(Node):
         # Send the goal position to the robot's control system
         if self.initialized is True:
             self.get_logger().info(f"Sending goal position: {self.best_goal.pose.position.x}, {self.best_goal.pose.position.y}")
-            self.get_logger().info(f"Goal grid position: {self.goal_grid[0]}, {self.goal_grid[1]}")
+            # self.get_logger().info(f"Goal grid position: {self.goal_grid[0]}, {self.goal_grid[1]}")
             self.navigator.goToPose(self.best_goal)
             # Add code to send the goal position to the robot's control system
         else:
