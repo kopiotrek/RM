@@ -21,9 +21,10 @@ class Explorer(Node):
             10
         )
         self.unknown_threshold = 0  # Customize the threshold to determine unknown areas
-        self.radius = 10  # radius around the frontier point to calculate information gain
+        self.radius = 15  # radius around the frontier point to calculate information gain
         self.obstacle_treshold = 80  # Threshold for considering a cell as an obstacle
         self.best_goal = PoseStamped()
+        self.last_goal = PoseStamped()
         self.initialized = False
         self.costmap_iniatilized = False
         self.costmap_origin = Pose()
@@ -74,6 +75,12 @@ class Explorer(Node):
                 if grid[y][x] < self.unknown_threshold:
                     if self.is_border_cell(grid, x, y):
                         frontier_points.append((x, y))
+
+        self.get_logger().info(f"Frontier points count: {len(frontier_points)}")
+        if len(frontier_points) < 100:
+            self.get_logger().info("----Mapping finished----")
+            raise SystemExit
+
         # Evaluate frontier points and select the best goal position
         self.evaluate_frontier_points(grid, frontier_points)
 
@@ -108,7 +115,9 @@ class Explorer(Node):
             if information_gain > best_information_gain:
                 self.best_goal.pose.position.x = x * self.resolution + self.costmap_origin.position.x
                 self.best_goal.pose.position.y = y * self.resolution + self.costmap_origin.position.y
-                best_information_gain = information_gain
+                if self.best_goal is not self.last_goal:
+                    self.last_goal = self.best_goal
+                    best_information_gain = information_gain
         
         if best_information_gain is float('-inf'):
             self.get_logger().warn("Best information gain is -inf!")
@@ -160,7 +169,10 @@ class Explorer(Node):
 def main(args=None):
     rclpy.init(args=args)
     goal_position_planner = Explorer()
-    rclpy.spin(goal_position_planner)
+    try:
+        rclpy.spin(goal_position_planner)
+    except SystemExit:
+        pass
     goal_position_planner.destroy_node()
     rclpy.shutdown()
 

@@ -40,23 +40,23 @@ def generate_launch_description():
     rst_launch_file_dir = os.path.join(get_package_share_directory('turtlebot3_bringup'), 'launch')
     pkg_gazebo_ros = get_package_share_directory('gazebo_ros')
     # world_file_name = 'turtlebot3_worlds/' + TURTLEBOT3_MODEL + '.model'
-    # world_file_name = 'turtlebot3_houses/waffle.model'
-    world_file_name = 'turtlebot3_dqn_stage2/waffle.model'
+    world_file_name = 'our_house/waffle.model'
+    # world_file_name = 'turtlebot3_dqn_stage2/waffle.model'
     world = os.path.join(get_package_share_directory('turtlebot3_gazebo'),
                          'worlds', world_file_name)
 
+    # map_dir = LaunchConfiguration(
+    #     'map',
+    #     default=os.path.join(
+    #         get_package_share_directory('turtlebot3_navigation2'),
+    #         'map',
+    #         'turtlebot3_dqn_stage2.yaml'))
     map_dir = LaunchConfiguration(
         'map',
         default=os.path.join(
             get_package_share_directory('turtlebot3_navigation2'),
             'map',
-            'turtlebot3_dqn_stage2.yaml'))
-    # map_dir = LaunchConfiguration(
-        # 'map',
-        # default=os.path.join(
-        #     get_package_share_directory('turtlebot3_navigation2'),
-        #     'map',
-        #     'turtlebot3_world.yaml'))
+            'turtlebot3_world.yaml'))
 
     # param_file_name = TURTLEBOT3_MODEL + '.yaml'
     param_file_name = 'waffle_2.yaml'
