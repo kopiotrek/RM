@@ -39,8 +39,8 @@ def generate_launch_description():
 
     rst_launch_file_dir = os.path.join(get_package_share_directory('turtlebot3_bringup'), 'launch')
     pkg_gazebo_ros = get_package_share_directory('gazebo_ros')
-    # world_file_name = 'turtlebot3_worlds/' + TURTLEBOT3_MODEL + '.model'
-    world_file_name = 'our_house/waffle.model'
+    world_file_name = 'turtlebot3_worlds/' + TURTLEBOT3_MODEL + '.model'
+    # world_file_name = 'our_house/waffle.model'
     # world_file_name = 'turtlebot3_dqn_stage2/waffle.model'
     world = os.path.join(get_package_share_directory('turtlebot3_gazebo'),
                          'worlds', world_file_name)
@@ -91,7 +91,10 @@ def generate_launch_description():
             default_value='false',
             description='Use simulation (Gazebo) clock if true'),
 
-            
+        # IncludeLaunchDescription(
+        #     PythonLaunchDescriptionSource([slam_launch_file_dir, '/online_async_launch.py']),
+        #     launch_arguments={}.items(),
+        # ),
 
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
@@ -113,10 +116,7 @@ def generate_launch_description():
         
         
 
-        # IncludeLaunchDescription(
-        #     PythonLaunchDescriptionSource([slam_launch_file_dir, '/online_async_launch.py']),
-        #     launch_arguments={}.items(),
-        # ),
+
 
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource([nav2_launch_file_dir, '/bringup_launch.py']),

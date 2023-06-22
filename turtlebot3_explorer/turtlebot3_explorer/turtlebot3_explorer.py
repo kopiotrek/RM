@@ -24,6 +24,8 @@ class Explorer(Node):
         self.radius = 5  # radius around the frontier point to calculate information gain
         self.obstacle_treshold = 80  # Threshold for considering a cell as an obstacle
         self.best_goal = PoseStamped()
+        self.last_goal = PoseStamped()
+        self.pre_last_goal = PoseStamped()
         self.previous_goals = []
         self.initialized = False
         self.costmap_iniatilized = False
@@ -54,8 +56,8 @@ class Explorer(Node):
             self.initialized = True
         
         elif self.costmap_iniatilized:
-            self.get_best_goal(msg)
             if self.navigator.isTaskComplete():
+                self.get_best_goal(msg)
                 self.send_goal_position()
 
     def get_best_goal(self, msg):
@@ -67,7 +69,7 @@ class Explorer(Node):
 
         # Convert the map data to a 2D grid representation
         grid = [[self.map_data[y * self.map_width + x] for x in range(self.map_width)] for y in range(self.map_height)]
-
+        # self.get_logger().info(f"Map dimensions: {self.map_width} x {self.map_height}")
         # Find the unknown areas
         frontier_points = []
         for y in range(self.map_height):
@@ -76,7 +78,7 @@ class Explorer(Node):
                     if self.is_border_cell(grid, x, y):
                         frontier_points.append((x, y))
 
-        self.get_logger().info(f"Frontier points count: {len(frontier_points)}")
+        # self.get_logger().info(f"Frontier points count: {len(frontier_points)}")
         if len(frontier_points) < 50:
             self.get_logger().info("----Mapping finished----")
             raise SystemExit
@@ -102,20 +104,27 @@ class Explorer(Node):
             return False
 
     def check_goal_repeatition(self,current_goal,last_goal,pre_last_goal):
-        if math.isclose(current_goal.pose.position.x, last_goal.pose.position.x, abs_tol = 0.1):
-            if math.isclose(current_goal.pose.position.y, last_goal.pose.position.y, abs_tol = 0.1):
-                return True
-        if math.isclose(current_goal.pose.position.x, pre_last_goal.pose.position.x, abs_tol = 0.1):
-            if math.isclose(current_goal.pose.position.y, pre_last_goal.pose.position.y, abs_tol = 0.1):
-                return True
-        return False
+        # if math.isclose(current_goal.pose.position.x, last_goal.pose.position.x, abs_tol = 0.1):
+        #     if math.isclose(current_goal.pose.position.y, last_goal.pose.position.y, abs_tol = 0.1):
+        #         # self.get_logger().warn("Last goal repetition")
+        #         return 1
+        #         # pass
+        # if math.isclose(current_goal.pose.position.x, pre_last_goal.pose.position.x, abs_tol = 0.1):
+        #     if math.isclose(current_goal.pose.position.y, pre_last_goal.pose.position.y, abs_tol = 0.1):
+        #         self.get_logger().warn("Pre-Last goal repetition")
+        #         # return 2
+        #         pass
+        for goal in self.previous_goals:
+            if math.isclose(current_goal.pose.position.x, goal.pose.position.x, abs_tol = 0.1):
+                if math.isclose(current_goal.pose.position.y, goal.pose.position.y, abs_tol = 0.1):
+                    return 3
+        return 0
 
     def evaluate_frontier_points(self, grid, frontier_points):
         best_information_gain = float('-inf')
-        goal_tmp = PoseStamped()
-        self.last_goal = PoseStamped()
-        self.preLast_goal = PoseStamped()
-        goal_repeated = False
+        current_goal = PoseStamped()
+
+        repetition = 0
 
         for frontier_point in frontier_points:
             x, y = frontier_point
@@ -123,36 +132,32 @@ class Explorer(Node):
             information_gain = self.compute_information_gain(grid, x, y)
             
             if information_gain > best_information_gain:
-                goal_tmp.pose.position.x = x * self.resolution + self.costmap_origin.position.x
-                goal_tmp.pose.position.y = y * self.resolution + self.costmap_origin.position.y     
-                # goal_tmp.pose.position.x = 1.0
-                # goal_tmp.pose.position.y = 2.0
-                for goal in self.previous_goals:
-                    if math.isclose(goal.pose.position.x, goal_tmp.pose.position.x, abs_tol = 0.1):
-                        if math.isclose(goal.pose.position.y, goal_tmp.pose.position.y, abs_tol = 0.1):
-                            goal_repeated = True
-                            # self.get_logger().info("Repeated goal aborted")
-                        
-                if goal_repeated is False:
-                    if self.last_goal.pose.position.x is not goal_tmp.pose.position.x:
-                        if self.last_goal.pose.position.y is not goal_tmp.pose.position.y:
-                            if self.last_goal.pose.position.x is not self.preLast_goal.pose.position.x:
-                                if self.last_goal.pose.position.y is not self.preLast_goal.pose.position.y:
-                                    best_information_gain = information_gain
-                                    self.previous_goals.append(self.best_goal)
-                                    self.best_goal.pose.position.x = goal_tmp.pose.position.x
-                                    self.best_goal.pose.position.y = goal_tmp.pose.position.y
-                                    self.preLast_goal.pose.position.x = self.last_goal.pose.position.x
-                                    self.preLast_goal.pose.position.y = self.last_goal.pose.position.y
-                                    self.last_goal.pose.position.x = goal_tmp.pose.position.x
-                                    self.last_goal.pose.position.y = goal_tmp.pose.position.y
-                                else:
-                                    self.best_goal.pose.position.x = -6.0
-                                    self.best_goal.pose.position.y = 0.0
-                                    self.get_logger().info("Going back to starting point")
-                
-                goal_repeated = False
+                current_goal.pose.position.x = x * self.resolution + self.costmap_origin.position.x
+                current_goal.pose.position.y = y * self.resolution + self.costmap_origin.position.y
+                repetition = self.check_goal_repeatition(current_goal,self.last_goal,self.pre_last_goal)
+                if repetition == 0:
+                    self.best_goal.pose.position.x = current_goal.pose.position.x
+                    self.best_goal.pose.position.y = current_goal.pose.position.y
+                    # self.previous_goals.append(self.best_goal)
+                    self.pre_last_goal = self.last_goal
+                    self.last_goal = current_goal
+                    best_information_gain = information_gain
+                    # self.get_logger().info(f"Best informaion gain: {best_information_gain}")
+                    # self.get_logger().info(f"pre_last_goal: {self.pre_last_goal.pose.position}")
+                    # self.get_logger().info(f"last_goal: {self.last_goal.pose.position}")
+                    # self.get_logger().info(f"current_goal: {current_goal.pose.position}")
+                # elif repetition == 1:
+                #     # self.get_logger().warn("Last goal repetition. Trying again...")
+                #     pass
+                # elif repetition == 2:
+                #     # self.best_goal.pose.position.x = -6.5
+                #     # self.best_goal.pose.position.y = -1.2
+                #     self.get_logger().warn("Double goal repetition. Going home...")
+                elif repetition == 3:
+                    self.get_logger().warn("Previous goal repetition. Trying again...")
 
+                    
+                
         if best_information_gain is float('-inf'):
             self.get_logger().warn("Best information gain is -inf!")
 
@@ -184,7 +189,7 @@ class Explorer(Node):
 
         # Calculate the information gain using entropy formula
         if p_obstacle > 0:
-            information_gain -= p_obstacle * math.log2(p_obstacle)
+            information_gain -= 0.9 * p_obstacle * math.log2(p_obstacle)
         if p_unknown > 0:
             information_gain += p_unknown * math.log2(p_unknown)
 
@@ -195,10 +200,11 @@ class Explorer(Node):
         if self.initialized is True:
             self.get_logger().info(f"Sending goal position: {self.best_goal.pose.position.x}, {self.best_goal.pose.position.y}")
             # self.get_logger().info(f"Goal grid position: {self.goal_grid[0]}, {self.goal_grid[1]}")
+            self.previous_goals.append(self.best_goal)
             self.navigator.goToPose(self.best_goal)
             # Add code to send the goal position to the robot's control system
         else:
-            self.get_logger().warn("No best goal found!")
+            self.get_logger().info("Initializing...")
 
 def main(args=None):
     rclpy.init(args=args)

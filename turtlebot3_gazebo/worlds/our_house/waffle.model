@@ -44,16 +44,7 @@
     </physics>
 
   <model name='turtlebot3_house'>
-      <model name='unit_cylinder'>
-        <pose>-3.60308 1.38772 0.499997 -4e-06 -4e-06 -0</pose>
-        <scale>1 1 1</scale>
-        <link name='link'>
-          <pose>-3.60308 1.38772 0.499997 -4e-06 -4e-06 -0</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0 0 -9.8 0 -0 0</acceleration>
-          <wrench>0 0 -9.8 0 -0 0</wrench>
-        </link>
-      </model>
+
     <link name='Wall_101'>
       <pose frame=''>-0.05 3.1 0 0 0 -1.5708</pose>
       <self_collide>0</self_collide>
@@ -4234,6 +4225,109 @@
         </visual>
       </link>
       <pose frame=''>0.883462 -0.576236 0 0 0 -3.14159</pose>
+    </model>
+    <model name='unit_cylinder'>
+      <pose>-3.60308 1.38772 0.499997 -4e-06 -4e-06 -0</pose>
+      <scale>1 1 1</scale>
+      <link name='link'>
+        <pose>-3.60308 1.38772 0.499997 -4e-06 -4e-06 -0</pose>
+        <velocity>0 0 0 0 -0 0</velocity>
+        <acceleration>0 0 -9.8 0 -0 0</acceleration>
+        <wrench>0 0 -9.8 0 -0 0</wrench>
+      </link>
+    </model>
+    <model name='first_2015_trash_can'>
+      <link name='link'>
+        <inertial>
+          <pose frame=''>0 0 0.3683 0 -0 0</pose>
+          <mass>4.83076</mass>
+          <inertia>
+            <ixx>0.281534</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.281534</iyy>
+            <iyz>0</iyz>
+            <izz>0.126223</izz>
+          </inertia>
+        </inertial>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://first_2015_trash_can/meshes/trash_can.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='collision'>
+          <geometry>
+            <mesh>
+              <uri>model://first_2015_trash_can/meshes/trash_can.dae</uri>
+            </mesh>
+          </geometry>
+        </collision>
+      </link>
+      <pose frame=''>1.88346 1.91193 0 0 -0 0</pose>
+    </model>
+    <!-- <model name='first_2015_trash_can_0'>
+      <link name='link'>
+        <inertial>
+          <pose frame=''>0 0 0.3683 0 -0 0</pose>
+          <mass>4.83076</mass>
+          <inertia>
+            <ixx>0.281534</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.281534</iyy>
+            <iyz>0</iyz>
+            <izz>0.126223</izz>
+          </inertia>
+        </inertial>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://first_2015_trash_can/meshes/trash_can.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='collision'>
+          <geometry>
+            <mesh>
+              <uri>model://first_2015_trash_can/meshes/trash_can.dae</uri>
+            </mesh>
+          </geometry>
+        </collision>
+      </link>
+      <pose frame=''>-3.69354 0.89439 0 0 -0 0</pose>
+    </model> -->
+    <model name='first_2015_trash_can_1'>
+      <link name='link'>
+        <inertial>
+          <pose frame=''>0 0 0.3683 0 -0 0</pose>
+          <mass>4.83076</mass>
+          <inertia>
+            <ixx>0.281534</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.281534</iyy>
+            <iyz>0</iyz>
+            <izz>0.126223</izz>
+          </inertia>
+        </inertial>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://first_2015_trash_can/meshes/trash_can.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='collision'>
+          <geometry>
+            <mesh>
+              <uri>model://first_2015_trash_can/meshes/trash_can.dae</uri>
+            </mesh>
+          </geometry>
+        </collision>
+      </link>
+      <pose frame=''>-2.69354 -3.89439 0 0 -0 0</pose>
     </model>
     <model name='bookshelf'>
       <static>1</static>
