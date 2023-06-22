@@ -44,6 +44,16 @@
     </physics>
 
   <model name='turtlebot3_house'>
+      <model name='unit_cylinder'>
+        <pose>-3.60308 1.38772 0.499997 -4e-06 -4e-06 -0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>-3.60308 1.38772 0.499997 -4e-06 -4e-06 -0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 -9.8 0 -0 0</acceleration>
+          <wrench>0 0 -9.8 0 -0 0</wrench>
+        </link>
+      </model>
     <link name='Wall_101'>
       <pose frame=''>-0.05 3.1 0 0 0 -1.5708</pose>
       <self_collide>0</self_collide>

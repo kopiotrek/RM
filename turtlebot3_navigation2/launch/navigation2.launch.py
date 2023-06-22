@@ -59,7 +59,7 @@ def generate_launch_description():
             'turtlebot3_world.yaml'))
 
     # param_file_name = TURTLEBOT3_MODEL + '.yaml'
-    param_file_name = 'waffle_2.yaml'
+    param_file_name = 'waffle_3.yaml'
     param_dir = LaunchConfiguration(
         'params_file',
         default=os.path.join(
@@ -100,11 +100,11 @@ def generate_launch_description():
             launch_arguments={'world': world, 'verbose': 'true'}.items(),
         ),
 
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource(
-                os.path.join(pkg_gazebo_ros, 'launch', 'gzclient.launch.py')
-            ),
-        ),
+        # IncludeLaunchDescription(
+        #     PythonLaunchDescriptionSource(
+        #         os.path.join(pkg_gazebo_ros, 'launch', 'gzclient.launch.py')
+        #     ),
+        # ),
 
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource([rst_launch_file_dir, '/turtlebot3_state_publisher.launch.py']),
@@ -126,11 +126,11 @@ def generate_launch_description():
                 'params_file': param_dir}.items(),
         ),
 
-        # Node(
-        #     package='rviz2',
-        #     executable='rviz2',
-        #     name='rviz2',
-        #     arguments=['-d', rviz_config_dir],
-        #     parameters=[{'use_sim_time': use_sim_time}],
-        #     output='screen'),
+        Node(
+            package='rviz2',
+            executable='rviz2',
+            name='rviz2',
+            arguments=['-d', rviz_config_dir],
+            parameters=[{'use_sim_time': use_sim_time}],
+            output='screen'),
     ])

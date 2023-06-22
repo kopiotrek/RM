@@ -77,7 +77,7 @@ class Explorer(Node):
                         frontier_points.append((x, y))
 
         self.get_logger().info(f"Frontier points count: {len(frontier_points)}")
-        if len(frontier_points) < 69:
+        if len(frontier_points) < 50:
             self.get_logger().info("----Mapping finished----")
             raise SystemExit
 
@@ -101,42 +101,57 @@ class Explorer(Node):
 
             return False
 
+    def check_goal_repeatition(self,current_goal,last_goal,pre_last_goal):
+        if math.isclose(current_goal.pose.position.x, last_goal.pose.position.x, abs_tol = 0.1):
+            if math.isclose(current_goal.pose.position.y, last_goal.pose.position.y, abs_tol = 0.1):
+                return True
+        if math.isclose(current_goal.pose.position.x, pre_last_goal.pose.position.x, abs_tol = 0.1):
+            if math.isclose(current_goal.pose.position.y, pre_last_goal.pose.position.y, abs_tol = 0.1):
+                return True
+        return False
+
     def evaluate_frontier_points(self, grid, frontier_points):
         best_information_gain = float('-inf')
         goal_tmp = PoseStamped()
+        self.last_goal = PoseStamped()
+        self.preLast_goal = PoseStamped()
         goal_repeated = False
-        past_froint = [0,0]
+
         for frontier_point in frontier_points:
-            if frontier_point is not past_froint:
-                x, y = frontier_point
-                # self.goal_grid = [x,y]
-
-
-                # Compute the information gain for the current frontier point
-                information_gain = self.compute_information_gain(grid, x, y)
+            x, y = frontier_point
+            # Compute the information gain for the current frontier point
+            information_gain = self.compute_information_gain(grid, x, y)
+            
+            if information_gain > best_information_gain:
+                goal_tmp.pose.position.x = x * self.resolution + self.costmap_origin.position.x
+                goal_tmp.pose.position.y = y * self.resolution + self.costmap_origin.position.y     
+                # goal_tmp.pose.position.x = 1.0
+                # goal_tmp.pose.position.y = 2.0
+                for goal in self.previous_goals:
+                    if math.isclose(goal.pose.position.x, goal_tmp.pose.position.x, abs_tol = 0.1):
+                        if math.isclose(goal.pose.position.y, goal_tmp.pose.position.y, abs_tol = 0.1):
+                            goal_repeated = True
+                            # self.get_logger().info("Repeated goal aborted")
+                        
+                if goal_repeated is False:
+                    if self.last_goal.pose.position.x is not goal_tmp.pose.position.x:
+                        if self.last_goal.pose.position.y is not goal_tmp.pose.position.y:
+                            if self.last_goal.pose.position.x is not self.preLast_goal.pose.position.x:
+                                if self.last_goal.pose.position.y is not self.preLast_goal.pose.position.y:
+                                    best_information_gain = information_gain
+                                    self.previous_goals.append(self.best_goal)
+                                    self.best_goal.pose.position.x = goal_tmp.pose.position.x
+                                    self.best_goal.pose.position.y = goal_tmp.pose.position.y
+                                    self.preLast_goal.pose.position.x = self.last_goal.pose.position.x
+                                    self.preLast_goal.pose.position.y = self.last_goal.pose.position.y
+                                    self.last_goal.pose.position.x = goal_tmp.pose.position.x
+                                    self.last_goal.pose.position.y = goal_tmp.pose.position.y
+                                else:
+                                    self.best_goal.pose.position.x = -6.0
+                                    self.best_goal.pose.position.y = 0.0
+                                    self.get_logger().info("Going back to starting point")
                 
-                if information_gain > best_information_gain:
-                    goal_tmp.pose.position.x = x * self.resolution + self.costmap_origin.position.x
-                    goal_tmp.pose.position.y = y * self.resolution + self.costmap_origin.position.y     
-                    # goal_tmp.pose.position.x = 1.0
-                    # goal_tmp.pose.position.y = 2.0
-                    for goal in self.previous_goals:
-                        if math.isclose(goal.pose.position.x, goal_tmp.pose.position.x, abs_tol = 0.1):
-                            if math.isclose(goal.pose.position.y, goal_tmp.pose.position.y, abs_tol = 0.1):
-                                goal_repeated = True
-                                self.get_logger().info("Repeated goal aborted")
-                            
-                    if goal_repeated is False:
-                        best_information_gain = information_gain                  
-                        self.previous_goals.append(self.best_goal)
-                        self.best_goal.pose.position.x = goal_tmp.pose.position.x
-                        self.best_goal.pose.position.y = goal_tmp.pose.position.y
-                    
-                    goal_repeated = False
-                    past_froint = frontier_point
-            else:
-                self.get_logger().warn("to_nie_chuj")
-
+                goal_repeated = False
 
         if best_information_gain is float('-inf'):
             self.get_logger().warn("Best information gain is -inf!")
